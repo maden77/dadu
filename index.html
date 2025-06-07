@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tebak Dadu</title>
-  <link rel="manifest" href="manifest.json" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
     body {
@@ -36,10 +35,79 @@
       height: calc(100vh - 160px);
     }
 
-    #dice {
-      width: 120px;
-      transition: transform 1s ease-in-out;
+    /* CSS untuk dadu 3D */
+    .dice-container {
+      width: 100px;
+      height: 100px;
+      position: relative;
+      margin: 20px auto;
+      perspective: 1000px;
     }
+
+    .dice {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1.5s ease-out;
+    }
+
+    .dice-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    .dot {
+      width: 15px;
+      height: 15px;
+      background: #333;
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    /* Posisi masing-masing muka dadu */
+    .front  { transform: rotateY(0deg) translateZ(50px); }
+    .back   { transform: rotateY(180deg) translateZ(50px); }
+    .right  { transform: rotateY(90deg) translateZ(50px); }
+    .left   { transform: rotateY(-90deg) translateZ(50px); }
+    .top    { transform: rotateX(90deg) translateZ(50px); }
+    .bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+    /* Pola titik untuk setiap muka dadu */
+    .face-1 .dot:nth-child(1) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    
+    .face-2 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .face-2 .dot:nth-child(2) { bottom: 25%; right: 25%; }
+    
+    .face-3 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .face-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-3 .dot:nth-child(3) { bottom: 25%; right: 25%; }
+    
+    .face-4 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .face-4 .dot:nth-child(2) { top: 25%; right: 25%; }
+    .face-4 .dot:nth-child(3) { bottom: 25%; left: 25%; }
+    .face-4 .dot:nth-child(4) { bottom: 25%; right: 25%; }
+    
+    .face-5 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .face-5 .dot:nth-child(2) { top: 25%; right: 25%; }
+    .face-5 .dot:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-5 .dot:nth-child(4) { bottom: 25%; left: 25%; }
+    .face-5 .dot:nth-child(5) { bottom: 25%; right: 25%; }
+    
+    .face-6 .dot:nth-child(1) { top: 25%; left: 25%; }
+    .face-6 .dot:nth-child(2) { top: 25%; right: 25%; }
+    .face-6 .dot:nth-child(3) { top: 50%; left: 25%; transform: translateY(-50%); }
+    .face-6 .dot:nth-child(4) { top: 50%; right: 25%; transform: translateY(-50%); }
+    .face-6 .dot:nth-child(5) { bottom: 25%; left: 25%; }
+    .face-6 .dot:nth-child(6) { bottom: 25%; right: 25%; }
 
     #guess {
       margin: 20px;
@@ -71,6 +139,7 @@
       margin-top: 15px;
       font-size: 1.1rem;
       color: #fbbf24;
+      min-height: 24px;
     }
 
     footer {
@@ -87,27 +156,91 @@
   
   <div id="game-area">
     <p id="turnInfo">Giliran: Pemain 1</p>
-    <canvas id="diceCanvas"></canvas>
-    <img id="dice" src="A_3D-rendered_digital_image_of_a_six-sided_die_sho.png" alt="Dadu" />
+    
+    <!-- Container untuk dadu 3D -->
+    <div class="dice-container">
+      <div class="dice" id="dice3d">
+        <!-- Muka dadu 1 -->
+        <div class="dice-face front face-1">
+          <div class="dot"></div>
+        </div>
+        <!-- Muka dadu 2 -->
+        <div class="dice-face back face-2">
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <!-- Muka dadu 3 -->
+        <div class="dice-face right face-3">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <!-- Muka dadu 4 -->
+        <div class="dice-face left face-4">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <!-- Muka dadu 5 -->
+        <div class="dice-face top face-5">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <!-- Muka dadu 6 -->
+        <div class="dice-face bottom face-6">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+    </div>
+    
     <input type="number" id="guess" min="1" max="6" placeholder="Tebak (1-6)" />
     <button onclick="rollDice()">Putar Dadu</button>
     <p id="result"></p>
     <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>
   </div>
   
-  <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
-  <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
+  <!-- Efek suara menggunakan Web Audio API -->
+  <audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" preload="auto"></audio>
 
   <footer>
     &copy; 2025 Game Tebak Dadu. Made with 💙
   </footer>
   
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
-  
   <script>
     let currentPlayer = 1;
     let scores = [0, 0];
+    const dice = document.getElementById('dice3d');
+
+    // Fungsi untuk menampilkan angka tertentu pada dadu
+    function showDiceFace(number) {
+      const rotations = {
+        1: 'rotateX(0deg) rotateY(0deg)',
+        2: 'rotateX(0deg) rotateY(180deg)',
+        3: 'rotateX(0deg) rotateY(90deg)',
+        4: 'rotateX(0deg) rotateY(-90deg)',
+        5: 'rotateX(90deg) rotateY(0deg)',
+        6: 'rotateX(-90deg) rotateY(0deg)'
+      };
+      
+      // Tambahkan rotasi acak untuk efek animasi
+      const randomRotate = `rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg)`;
+      dice.style.transform = randomRotate;
+      
+      // Setelah animasi selesai, tampilkan angka yang benar
+      setTimeout(() => {
+        dice.style.transform = rotations[number];
+      }, 1000);
+    }
 
     function rollDice() {
       const guess = parseInt(document.getElementById("guess").value);
@@ -116,10 +249,8 @@
         return;
       }
 
-      const dice = document.getElementById("dice");
-      dice.style.transform = "rotateY(720deg) rotateX(720deg)";
-
       const result = Math.floor(Math.random() * 6) + 1;
+      showDiceFace(result);
 
       setTimeout(() => {
         const correctSound = document.getElementById("correctSound");
@@ -128,10 +259,10 @@
         if (guess === result) {
           scores[currentPlayer - 1] += result;
           document.getElementById("result").textContent = `Benar! Angka ${result}. +${result} poin.`;
-          correctSound.play();
+          correctSound.play().catch(e => console.log("Autoplay prevented: ", e));
         } else {
           document.getElementById("result").textContent = `Salah! Angka ${result}.`;
-          wrongSound.play();
+          wrongSound.play().catch(e => console.log("Autoplay prevented: ", e));
         }
 
         document.getElementById("score1").textContent = scores[0];
@@ -140,7 +271,7 @@
         currentPlayer = currentPlayer === 1 ? 2 : 1;
         document.getElementById("turnInfo").textContent = `Giliran: Pemain ${currentPlayer}`;
         document.getElementById("guess").value = "";
-      }, 1000);
+      }, 1500);
     }
   </script>
 </body>
