@@ -84,6 +84,7 @@ footer {
     <h1>Tebak Dadu</h1>
   </header>  <div id="game-area">
     <p id="turnInfo">Giliran: Pemain 1</p>
+    <canvas id="diceCanvas"></canvas>
     <img id="dice" src="A_3D-rendered_digital_image_of_a_six-sided_die_sho.png" alt="Dadu" />
     <input type="number" id="guess" min="1" max="6" placeholder="Tebak (1-6)" />
     <button onclick="rollDice()">Putar Dadu</button>
@@ -93,9 +94,9 @@ footer {
 
   <footer>
     &copy; 2025 Game Tebak Dadu. Made with 💙
-  </footer>  <script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+  </footer>  
+    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js";
+<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js";
     let currentPlayer = 1;
     let scores = [0, 0];
 
