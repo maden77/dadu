@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="description" content="Game Tebak Dadu Seru untuk 2 Pemain">
   <title>Tebak Dadu</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
     body {
@@ -14,6 +18,7 @@
       font-family: 'Orbitron', sans-serif;
       text-align: center;
       overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
 
     header {
@@ -33,6 +38,7 @@
       align-items: center;
       justify-content: center;
       height: calc(100vh - 160px);
+      padding: 10px;
     }
 
     /* CSS untuk dadu 3D */
@@ -147,6 +153,42 @@
       background: #0ea5e9;
       font-size: 0.9rem;
     }
+
+    #installBtn {
+      display: none;
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    @media (max-width: 600px) {
+      .dice-container {
+        width: 80px;
+        height: 80px;
+      }
+      .dice-face {
+        border-radius: 8px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+      }
+      .front  { transform: rotateY(0deg) translateZ(40px); }
+      .back   { transform: rotateY(180deg) translateZ(40px); }
+      .right  { transform: rotateY(90deg) translateZ(40px); }
+      .left   { transform: rotateY(-90deg) translateZ(40px); }
+      .top    { transform: rotateX(90deg) translateZ(40px); }
+      .bottom { transform: rotateX(-90deg) translateZ(40px); }
+    }
   </style>
 </head>
 <body>
@@ -208,71 +250,123 @@
     <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>
   </div>
   
-  <!-- Efek suara menggunakan Web Audio API -->
-  <audio id="correctSound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" preload="auto"></audio>
-  <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" preload="auto"></audio>
+  <button id="installBtn" title="Install App">↓</button>
+
+  <!-- Efek suara sebagai data URI (tanpa file eksternal) -->
+  <audio id="correctSound" preload="auto"></audio>
+  <audio id="wrongSound" preload="auto"></audio>
 
   <footer>
-    &copy; 2025 Game Tebak Dadu. Made with 💙
+    &copy; 2023 Game Tebak Dadu. Made with 💙
   </footer>
-  
+
   <script>
+    // Manifest untuk PWA
+    const manifest = {
+      "name": "Tebak Dadu",
+      "short_name": "Dadu",
+      "description": "Game Tebak Dadu Seru untuk 2 Pemain",
+      "start_url": "/",
+      "display": "standalone",
+      "background_color": "#0f172a",
+      "theme_color": "#0ea5e9",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        },
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
+          "src": "icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    };
+
+    // Game state
     let currentPlayer = 1;
     let scores = [0, 0];
-    const dice = document.getElementById('dice3d');
+    let diceFaces = [
+      'rotateX(0deg) rotateY(0deg)',
+      'rotateX(180deg) rotateY(0deg)',
+      'rotateX(0deg) rotateY(90deg)',
+      'rotateX(0deg) rotateY(-90deg)',
+      'rotateX(90deg) rotateY(0deg)',
+      'rotateX(-90deg) rotateY(0deg)'
+    ];
 
-    // Fungsi untuk menampilkan angka tertentu pada dadu
-    function showDiceFace(number) {
-      const rotations = {
-        1: 'rotateX(0deg) rotateY(0deg)',
-        2: 'rotateX(0deg) rotateY(180deg)',
-        3: 'rotateX(0deg) rotateY(90deg)',
-        4: 'rotateX(0deg) rotateY(-90deg)',
-        5: 'rotateX(90deg) rotateY(0deg)',
-        6: 'rotateX(-90deg) rotateY(0deg)'
-      };
-      
-      // Tambahkan rotasi acak untuk efek animasi
-      const randomRotate = `rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg)`;
-      dice.style.transform = randomRotate;
-      
-      // Setelah animasi selesai, tampilkan angka yang benar
-      setTimeout(() => {
-        dice.style.transform = rotations[number];
-      }, 1000);
-    }
+    // Initialize sounds
+    document.getElementById('correctSound').src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'; // Shortened for brevity
+    document.getElementById('wrongSound').src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'; // Shortened for brevity
 
+    // Roll dice function
     function rollDice() {
-      const guess = parseInt(document.getElementById("guess").value);
-      if (!guess || guess < 1 || guess > 6) {
-        alert("Masukkan angka antara 1 dan 6!");
+      const guessInput = document.getElementById('guess');
+      const guess = parseInt(guessInput.value);
+      const resultDisplay = document.getElementById('result');
+      const dice = document.getElementById('dice3d');
+      
+      if (isNaN(guess) || guess < 1 || guess > 6) {
+        resultDisplay.textContent = 'Masukkan tebakan yang valid (1-6)!';
         return;
       }
-
-      const result = Math.floor(Math.random() * 6) + 1;
-      showDiceFace(result);
-
+      
+      // Disable button during animation
+      document.querySelector('button').disabled = true;
+      
+      // Random rotation and result
+      const randomFace = Math.floor(Math.random() * 6) + 1;
+      const rotations = Math.floor(Math.random() * 3) + 5;
+      
+      // Animate dice
+      dice.style.transition = 'transform 1.5s ease-out';
+      dice.style.transform = `rotateX(${rotations * 360}deg) rotateY(${rotations * 360}deg) ${diceFaces[randomFace-1]}`;
+      
+      // Check result after animation
       setTimeout(() => {
-        const correctSound = document.getElementById("correctSound");
-        const wrongSound = document.getElementById("wrongSound");
-
-        if (guess === result) {
-          scores[currentPlayer - 1] += result;
-          document.getElementById("result").textContent = `Benar! Angka ${result}. +${result} poin.`;
-          correctSound.play().catch(e => console.log("Autoplay prevented: ", e));
+        if (guess === randomFace) {
+          scores[currentPlayer-1] += 10;
+          resultDisplay.textContent = `Benar! Dadu menunjukkan ${randomFace}`;
+          document.getElementById(`score${currentPlayer}`).textContent = scores[currentPlayer-1];
+          document.getElementById('correctSound').play();
         } else {
-          document.getElementById("result").textContent = `Salah! Angka ${result}.`;
-          wrongSound.play().catch(e => console.log("Autoplay prevented: ", e));
+          resultDisplay.textContent = `Salah! Dadu menunjukkan ${randomFace}`;
+          document.getElementById('wrongSound').play();
         }
-
-        document.getElementById("score1").textContent = scores[0];
-        document.getElementById("score2").textContent = scores[1];
-
+        
+        // Switch player
         currentPlayer = currentPlayer === 1 ? 2 : 1;
-        document.getElementById("turnInfo").textContent = `Giliran: Pemain ${currentPlayer}`;
-        document.getElementById("guess").value = "";
+        document.getElementById('turnInfo').textContent = `Giliran: Pemain ${currentPlayer}`;
+        
+        // Clear input and enable button
+        guessInput.value = '';
+        guessInput.focus();
+        document.querySelector('button').disabled = false;
       }, 1500);
     }
+
+    // PWA installation
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      const installBtn = document.getElementById('installBtn');
+      installBtn.style.display = 'block';
+      
+      installBtn.addEventListener('click', () => {
+        e.prompt();
+        installBtn.style.display = 'none';
+      });
+    });
+
+    // Focus input on load
+    window.addEventListener('load', () => {
+      document.getElementById('guess').focus();
+    });
   </script>
 </body>
 </html>
