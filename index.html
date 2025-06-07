@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <title>Tebak Dadu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    img {
+      width: 150px;
+      transition: transform 1s;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game Tebak Dadu</h1>
+  <p id="turnInfo">Giliran: Pemain 1</p>
+  <img id="dice" src="A_3D-rendered_digital_image_of_a_six-sided_die_sho.png" alt="Dadu" />
+  <input type="number" id="guess" min="1" max="6" placeholder="Tebak angka (1-6)" />
+  <button onclick="rollDice()">Putar Dadu</button>
+  <p id="result"></p>
+  <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>  <!-- Suara benar dan salah --><audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_45c6b2fc71.mp3" preload="auto"></audio> <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2021/09/23/audio_7c5ac43e30.mp3" preload="auto"></audio>
+
+  <script>
+    let currentPlayer = 1;
+    let scores = JSON.parse(localStorage.getItem("scores")) || [0, 0];
+    document.getElementById("score1").textContent = scores[0];
+    document.getElementById("score2").textContent = scores[1];
+
+    function rollDice() {
+      const guess = parseInt(document.getElementById("guess").value);
+      if (!guess || guess < 1 || guess > 6) {
+        alert("Masukkan angka tebakan antara 1 dan 6!");
+        return;
+      }
+
+      const dice = document.getElementById("dice");
+      dice.style.transform = "rotateY(360deg) rotateX(360deg)";
+
+      const result = Math.floor(Math.random() * 6) + 1;
+
+      setTimeout(() => {
+        const correctSound = document.getElementById("correctSound");
+        const wrongSound = document.getElementById("wrongSound");
+
+        if (guess === result) {
+          scores[currentPlayer - 1] += result;
+          document.getElementById("result").textContent = `Benar! Angkanya ${result}. +${result} poin.`;
+          correctSound.play();
+        } else {
+          document.getElementById("result").textContent = `Salah! Angkanya ${result}.`;
+          wrongSound.play();
+        }
+
+        document.getElementById("score1").textContent = scores[0];
+        document.getElementById("score2").textContent = scores[1];
+        localStorage.setItem("scores", JSON.stringify(scores));
+
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+        document.getElementById("turnInfo").textContent = `Giliran: Pemain ${currentPlayer}`;
+        document.getElementById("guess").value = "";
+      }, 1000);
+    }
+
+    // Service Worker untuk PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log("SW registered", reg))
+          .catch(err => console.error("SW registration failed", err));
+      });
+    }
+  </script></body>
+</html>
