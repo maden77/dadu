@@ -1,88 +1,91 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tebak Dadu</title>
   <link rel="manifest" href="manifest.json" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to bottom right, #0f172a, #1e293b);
-  color: white;
-  font-family: 'Orbitron', sans-serif;
-  text-align: center;
-  overflow: hidden;
-}
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #0f172a, #1e293b);
+      color: white;
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      overflow: hidden;
+    }
 
-header {
-  padding: 20px;
-  background: #0ea5e9;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
+    header {
+      padding: 20px;
+      background: #0ea5e9;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
 
-h1 {
-  margin: 0;
-  font-size: 2rem;
-}
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
 
-#game-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 160px);
-}
+    #game-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 160px);
+    }
 
-#dice {
-  width: 120px;
-  transition: transform 1s ease-in-out;
-}
+    #dice {
+      width: 120px;
+      transition: transform 1s ease-in-out;
+    }
 
-#guess {
-  margin: 20px;
-  padding: 10px;
-  width: 100px;
-  font-size: 1.2rem;
-  text-align: center;
-  border-radius: 8px;
-  border: none;
-}
+    #guess {
+      margin: 20px;
+      padding: 10px;
+      width: 100px;
+      font-size: 1.2rem;
+      text-align: center;
+      border-radius: 8px;
+      border: none;
+    }
 
-button {
-  padding: 10px 30px;
-  font-size: 1.2rem;
-  background: #22c55e;
-  border: none;
-  border-radius: 12px;
-  color: white;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  transition: background 0.3s;
-}
+    button {
+      padding: 10px 30px;
+      font-size: 1.2rem;
+      background: #22c55e;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
 
-button:hover {
-  background: #16a34a;
-}
+    button:hover {
+      background: #16a34a;
+    }
 
-#result {
-  margin-top: 15px;
-  font-size: 1.1rem;
-  color: #fbbf24;
-}
+    #result {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #fbbf24;
+    }
 
-footer {
-  padding: 10px;
-  background: #0ea5e9;
-  font-size: 0.9rem;
-}
-
+    footer {
+      padding: 10px;
+      background: #0ea5e9;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Tebak Dadu</h1>
-  </header>  <div id="game-area">
+  </header>
+  
+  <div id="game-area">
     <p id="turnInfo">Giliran: Pemain 1</p>
     <canvas id="diceCanvas"></canvas>
     <img id="dice" src="A_3D-rendered_digital_image_of_a_six-sided_die_sho.png" alt="Dadu" />
@@ -90,13 +93,19 @@ footer {
     <button onclick="rollDice()">Putar Dadu</button>
     <p id="result"></p>
     <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>
-  </div><audio id="correctSound" src="correct.mp3" preload="auto"></audio> <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
+  </div>
+  
+  <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
 
   <footer>
     &copy; 2025 Game Tebak Dadu. Made with 💙
-  </footer>  
-    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js";
-<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js";
+  </footer>
+  
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <script>
     let currentPlayer = 1;
     let scores = [0, 0];
 
@@ -133,5 +142,6 @@ footer {
         document.getElementById("guess").value = "";
       }, 1000);
     }
-  </script></body>
+  </script>
+</body>
 </html>
