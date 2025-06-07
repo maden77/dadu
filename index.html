@@ -1,60 +1,111 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tebak Dadu</title>
+  <link rel="manifest" href="manifest.json" />
   <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
-    }
-    img {
-      width: 150px;
-      transition: transform 1s;
-    }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-    .hidden {
-      display: none;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  overflow: hidden;
+}
+
+header {
+  padding: 20px;
+  background: #0ea5e9;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+#game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 160px);
+}
+
+#dice {
+  width: 120px;
+  transition: transform 1s ease-in-out;
+}
+
+#guess {
+  margin: 20px;
+  padding: 10px;
+  width: 100px;
+  font-size: 1.2rem;
+  text-align: center;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 10px 30px;
+  font-size: 1.2rem;
+  background: #22c55e;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #16a34a;
+}
+
+#result {
+  margin-top: 15px;
+  font-size: 1.1rem;
+  color: #fbbf24;
+}
+
+footer {
+  padding: 10px;
+  background: #0ea5e9;
+  font-size: 0.9rem;
+}
+
   </style>
 </head>
 <body>
-  <h1>Game Tebak Dadu</h1>
-  <p id="turnInfo">Giliran: Pemain 1</p>
-  <img id="dice" src="A_3D-rendered_digital_image_of_a_six-sided_die_sho.png" alt="Dadu" />
-  <input type="number" id="guess" min="1" max="6" placeholder="Tebak angka (1-6)" />
-  <button onclick="rollDice()">Putar Dadu</button>
-  <p id="result"></p>
-  <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>  <!-- Suara benar dan salah --><audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_45c6b2fc71.mp3" preload="auto"></audio> <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2021/09/23/audio_7c5ac43e30.mp3" preload="auto"></audio>
+  <header>
+    <h1>Tebak Dadu</h1>
+  </header>  <div id="game-area">
+    <p id="turnInfo">Giliran: Pemain 1</p>
+    <img id="dice" src="A_3D-rendered_digital_image_of_a_six-sided_die_sho.png" alt="Dadu" />
+    <input type="number" id="guess" min="1" max="6" placeholder="Tebak (1-6)" />
+    <button onclick="rollDice()">Putar Dadu</button>
+    <p id="result"></p>
+    <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>
+  </div><audio id="correctSound" src="correct.mp3" preload="auto"></audio> <audio id="wrongSound" src="wrong.mp3" preload="auto"></audio>
 
-  <script>
+  <footer>
+    &copy; 2025 Game Tebak Dadu. Made with 💙
+  </footer>  <script>
     let currentPlayer = 1;
-    let scores = JSON.parse(localStorage.getItem("scores")) || [0, 0];
-    document.getElementById("score1").textContent = scores[0];
-    document.getElementById("score2").textContent = scores[1];
+    let scores = [0, 0];
 
     function rollDice() {
       const guess = parseInt(document.getElementById("guess").value);
       if (!guess || guess < 1 || guess > 6) {
-        alert("Masukkan angka tebakan antara 1 dan 6!");
+        alert("Masukkan angka antara 1 dan 6!");
         return;
       }
 
       const dice = document.getElementById("dice");
-      dice.style.transform = "rotateY(360deg) rotateX(360deg)";
+      dice.style.transform = "rotateY(720deg) rotateX(720deg)";
 
       const result = Math.floor(Math.random() * 6) + 1;
 
@@ -64,30 +115,20 @@
 
         if (guess === result) {
           scores[currentPlayer - 1] += result;
-          document.getElementById("result").textContent = `Benar! Angkanya ${result}. +${result} poin.`;
+          document.getElementById("result").textContent = `Benar! Angka ${result}. +${result} poin.`;
           correctSound.play();
         } else {
-          document.getElementById("result").textContent = `Salah! Angkanya ${result}.`;
+          document.getElementById("result").textContent = `Salah! Angka ${result}.`;
           wrongSound.play();
         }
 
         document.getElementById("score1").textContent = scores[0];
         document.getElementById("score2").textContent = scores[1];
-        localStorage.setItem("scores", JSON.stringify(scores));
 
         currentPlayer = currentPlayer === 1 ? 2 : 1;
         document.getElementById("turnInfo").textContent = `Giliran: Pemain ${currentPlayer}`;
         document.getElementById("guess").value = "";
       }, 1000);
-    }
-
-    // Service Worker untuk PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log("SW registered", reg))
-          .catch(err => console.error("SW registration failed", err));
-      });
     }
   </script></body>
 </html>
