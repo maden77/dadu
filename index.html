@@ -608,7 +608,8 @@
       document.getElementById('walletBalance').textContent = walletBalance.toLocaleString('id-ID');
     }
     
-    // Roll dice function
+    
+    //  fungsi rollDice untuk menambahkan bonus 10% jika tebakan benar
     function rollDice() {
       const guessInput = document.getElementById('guess');
       const guess = parseInt(guessInput.value);
@@ -634,8 +635,15 @@
       // Check result after animation
       setTimeout(() => {
         if (guess === randomFace) {
+          // Hitung bonus 10% dari modal (Rp 100)
+          const bonus = Math.floor(GAME_FEE * 0.1);
+          const totalWin = GAME_FEE + bonus;
+          
           scores[currentPlayer-1] += 10;
-          resultDisplay.textContent = `Benar! Dadu menunjukkan ${randomFace}`;
+          walletBalance += totalWin; // Kembalikan modal + bonus 10%
+          updateWalletBalance();
+          
+          resultDisplay.textContent = `Benar! Dadu menunjukkan ${randomFace}. Anda dapat Rp ${totalWin} (Modal Rp ${GAME_FEE} + Bonus Rp ${bonus})`;
           document.getElementById(`score${currentPlayer}`).textContent = scores[currentPlayer-1];
           document.getElementById('correctSound').play();
           
@@ -650,7 +658,7 @@
             }, 2000);
           }
         } else {
-          resultDisplay.textContent = `Salah! Dadu menunjukkan ${randomFace}`;
+          resultDisplay.textContent = `Salah! Dadu menunjukkan ${randomFace}. Anda kalah Rp ${GAME_FEE}`;
           document.getElementById('wrongSound').play();
         }
         
