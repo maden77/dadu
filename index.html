@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0ea5e9">
-  <meta name="description" content="Game Tebak Dadu Seru untuk 2 Pemain">
-  <title>Tebak Dadu</title>
+  <meta name="description" content="Game Tebak Dadu Seru dengan Fitur Dompet Digital">
+  <title>Tebak Dadu - Dompet</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
   <style>
@@ -17,7 +17,7 @@
       color: white;
       font-family: 'Orbitron', sans-serif;
       text-align: center;
-      overflow: hidden;
+      overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -37,8 +37,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: calc(100vh - 160px);
-      padding: 10px;
+      min-height: calc(100vh - 160px);
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     /* CSS untuk dadu 3D */
@@ -170,6 +171,154 @@
       z-index: 100;
     }
 
+    /* Payment Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+    }
+
+    .modal-content {
+      background-color: #1e293b;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: white;
+    }
+
+    .payment-option {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin: 10px 0;
+      background: #334155;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .payment-option:hover {
+      background: #475569;
+    }
+
+    .payment-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 15px;
+      object-fit: contain;
+    }
+
+    .premium-feature {
+      background: linear-gradient(to right, #f59e0b, #fbbf24);
+      color: #1e293b;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-left: 10px;
+    }
+
+    #premiumBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #f59e0b;
+      color: #1e293b;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 18px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 100;
+      font-weight: bold;
+    }
+
+    /* Wallet Styles */
+    .wallet-section {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .wallet-balance {
+      font-size: 1.5rem;
+      color: #fbbf24;
+      margin: 10px 0;
+    }
+    
+    .wallet-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      gap: 10px;
+    }
+    
+    .wallet-btn {
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      flex: 1;
+    }
+    
+    .topup-btn {
+      background: #22c55e;
+      color: white;
+    }
+    
+    .withdraw-btn {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .game-fee {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 5px;
+    }
+    
+    /* Modal Input Styles */
+    .amount-input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: white;
+      font-size: 1rem;
+    }
+    
+    .fee-info {
+      color: #f59e0b;
+      font-size: 0.9rem;
+      margin: 5px 0;
+    }
+
     @media (max-width: 600px) {
       .dice-container {
         width: 80px;
@@ -188,6 +337,14 @@
       .left   { transform: rotateY(-90deg) translateZ(40px); }
       .top    { transform: rotateX(90deg) translateZ(40px); }
       .bottom { transform: rotateX(-90deg) translateZ(40px); }
+      
+      .modal-content {
+        margin: 20% auto;
+      }
+
+      #game-area {
+        padding: 10px;
+      }
     }
   </style>
 </head>
@@ -244,13 +401,138 @@
       </div>
     </div>
     
+    <!-- Section Dompet -->
+    <div class="wallet-section">
+      <h3>Dompet Game</h3>
+      <div class="wallet-balance">Saldo: Rp <span id="walletBalance">0</span></div>
+      <div class="game-fee">Biaya per main: Rp 100</div>
+      
+      <div class="wallet-actions">
+        <button class="wallet-btn topup-btn" onclick="openTopupModal()">Top Up</button>
+        <button class="wallet-btn withdraw-btn" onclick="openWithdrawModal()">Tarik Saldo</button>
+      </div>
+    </div>
+    
     <input type="number" id="guess" min="1" max="6" placeholder="Tebak (1-6)" />
-    <button onclick="rollDice()">Putar Dadu</button>
+    <button onclick="checkBalanceBeforePlay()">Main (Rp 100)</button>
     <p id="result"></p>
     <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>
   </div>
   
+  <!-- Modal Top Up -->
+  <div id="topupModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeTopupModal()">&times;</span>
+      <h2>Top Up Saldo</h2>
+      <p>Minimum top up: Rp 10.000</p>
+      
+      <input type="number" id="topupAmount" class="amount-input" placeholder="Masukkan jumlah" min="10000">
+      
+      <h3>Pilih Metode Pembayaran:</h3>
+      <div class="payment-option" onclick="selectPayment('dana')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_DANA.svg" alt="DANA" class="payment-icon">
+        <span>DANA</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectPayment('gopay')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="payment-icon">
+        <span>GoPay</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectPayment('ovo')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo.svg" alt="OVO" class="payment-icon">
+        <span>OVO</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectPayment('shopeepay')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/ShopeePay_logo.svg" alt="ShopeePay" class="payment-icon">
+        <span>ShopeePay</span>
+      </div>
+      
+      <button onclick="processTopup()" style="width: 100%; margin-top: 20px;">Top Up Sekarang</button>
+    </div>
+  </div>
+  
+  <!-- Modal Tarik Saldo -->
+  <div id="withdrawModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeWithdrawModal()">&times;</span>
+      <h2>Tarik Saldo</h2>
+      <p>Minimum penarikan: Rp 10.000</p>
+      <p class="fee-info">Biaya penarikan: 10% dari jumlah</p>
+      
+      <input type="number" id="withdrawAmount" class="amount-input" placeholder="Masukkan jumlah" min="10000">
+      
+      <p id="withdrawFeeInfo" class="fee-info">Biaya: Rp 0</p>
+      <p id="withdrawTotalInfo">Jumlah diterima: Rp 0</p>
+      
+      <h3>Pilih Tujuan Penarikan:</h3>
+      <div class="payment-option" onclick="selectWithdrawal('dana')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_DANA.svg" alt="DANA" class="payment-icon">
+        <span>DANA</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectWithdrawal('gopay')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="payment-icon">
+        <span>GoPay</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectWithdrawal('ovo')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo.svg" alt="OVO" class="payment-icon">
+        <span>OVO</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectWithdrawal('shopeepay')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/ShopeePay_logo.svg" alt="ShopeePay" class="payment-icon">
+        <span>ShopeePay</span>
+      </div>
+      
+      <button onclick="processWithdrawal()" style="width: 100%; margin-top: 20px;">Tarik Sekarang</button>
+    </div>
+  </div>
+  
+  <!-- Modal Premium -->
+  <div id="premiumModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closePremiumModal()">&times;</span>
+      <h2>Upgrade ke Premium</h2>
+      <p>Dapatkan fitur eksklusif dengan upgrade ke versi premium:</p>
+      <ul>
+        <li>Dadu emas eksklusif</li>
+        <li>Efek suara lebih keren</li>
+        <li>Animasi kemenangan spesial</li>
+        <li>Bonus 10% setiap top up</li>
+      </ul>
+      <p>Hanya Rp 10.000</p>
+      
+      <h3>Pilih Metode Pembayaran:</h3>
+      
+      <div class="payment-option" onclick="selectPremiumPayment('dana')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_DANA.svg" alt="DANA" class="payment-icon">
+        <span>DANA</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectPremiumPayment('gopay')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="payment-icon">
+        <span>GoPay</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectPremiumPayment('ovo')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo.svg" alt="OVO" class="payment-icon">
+        <span>OVO</span>
+      </div>
+      
+      <div class="payment-option" onclick="selectPremiumPayment('shopeepay')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/ShopeePay_logo.svg" alt="ShopeePay" class="payment-icon">
+        <span>ShopeePay</span>
+      </div>
+      
+      <button onclick="processPremiumPayment()" style="width: 100%; margin-top: 20px;">Bayar Sekarang</button>
+    </div>
+  </div>
+  
   <button id="installBtn" title="Install App">↓</button>
+  <button id="premiumBtn" title="Upgrade Premium" onclick="openPremiumModal()">★</button>
 
   <!-- Efek suara sebagai data URI (tanpa file eksternal) -->
   <audio id="correctSound" preload="auto"></audio>
@@ -261,34 +543,6 @@
   </footer>
 
   <script>
-    // Manifest untuk PWA
-    const manifest = {
-      "name": "Tebak Dadu",
-      "short_name": "Dadu",
-      "description": "Game Tebak Dadu Seru untuk 2 Pemain",
-      "start_url": "/",
-      "display": "standalone",
-      "background_color": "#0f172a",
-      "theme_color": "#0ea5e9",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>",
-          "sizes": "any",
-          "type": "image/svg+xml"
-        },
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        },
-        {
-          "src": "icon-512.png",
-          "sizes": "512x512",
-          "type": "image/png"
-        }
-      ]
-    };
-
     // Game state
     let currentPlayer = 1;
     let scores = [0, 0];
@@ -300,11 +554,60 @@
       'rotateX(90deg) rotateY(0deg)',
       'rotateX(-90deg) rotateY(0deg)'
     ];
+    
+    // Wallet state
+    let walletBalance = parseInt(localStorage.getItem('walletBalance')) || 0;
+    let selectedPaymentMethod = '';
+    let selectedWithdrawalMethod = '';
+    let selectedPremiumPaymentMethod = '';
+    const GAME_FEE = 100;
+    const MIN_TOPUP = 10000;
+    const MIN_WITHDRAW = 10000;
+    const WITHDRAWAL_FEE_PERCENT = 10;
+    const PREMIUM_PRICE = 10000;
+    let isPremium = localStorage.getItem('premium') === 'true';
 
-    // Initialize sounds
-    document.getElementById('correctSound').src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'; // Shortened for brevity
-    document.getElementById('wrongSound').src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...'; // Shortened for brevity
-
+    // Initialize wallet display
+    function initWallet() {
+      document.getElementById('walletBalance').textContent = walletBalance.toLocaleString('id-ID');
+      
+      // Update withdrawal info when amount changes
+      document.getElementById('withdrawAmount').addEventListener('input', updateWithdrawalInfo);
+    }
+    
+    // Update withdrawal fee info
+    function updateWithdrawalInfo() {
+      const amount = parseInt(document.getElementById('withdrawAmount').value) || 0;
+      const fee = Math.floor(amount * WITHDRAWAL_FEE_PERCENT / 100);
+      const received = amount - fee;
+      
+      document.getElementById('withdrawFeeInfo').textContent = `Biaya: Rp ${fee.toLocaleString('id-ID')}`;
+      document.getElementById('withdrawTotalInfo').textContent = `Jumlah diterima: Rp ${received.toLocaleString('id-ID')}`;
+    }
+    
+    // Check balance before playing
+    function checkBalanceBeforePlay() {
+      if (walletBalance < GAME_FEE) {
+        alert(`Saldo tidak cukup. Biaya per main Rp ${GAME_FEE}. Silakan top up terlebih dahulu.`);
+        openTopupModal();
+      } else {
+        deductGameFee();
+        rollDice();
+      }
+    }
+    
+    // Deduct game fee
+    function deductGameFee() {
+      walletBalance -= GAME_FEE;
+      updateWalletBalance();
+    }
+    
+    // Update wallet balance display
+    function updateWalletBalance() {
+      localStorage.setItem('walletBalance', walletBalance.toString());
+      document.getElementById('walletBalance').textContent = walletBalance.toLocaleString('id-ID');
+    }
+    
     // Roll dice function
     function rollDice() {
       const guessInput = document.getElementById('guess');
@@ -335,6 +638,17 @@
           resultDisplay.textContent = `Benar! Dadu menunjukkan ${randomFace}`;
           document.getElementById(`score${currentPlayer}`).textContent = scores[currentPlayer-1];
           document.getElementById('correctSound').play();
+          
+          // Premium celebration
+          if (isPremium) {
+            resultDisplay.style.color = 'gold';
+            resultDisplay.style.fontWeight = 'bold';
+            resultDisplay.style.textShadow = '0 0 10px gold';
+            setTimeout(() => {
+              resultDisplay.style.color = '#fbbf24';
+              resultDisplay.style.textShadow = 'none';
+            }, 2000);
+          }
         } else {
           resultDisplay.textContent = `Salah! Dadu menunjukkan ${randomFace}`;
           document.getElementById('wrongSound').play();
@@ -351,7 +665,153 @@
       }, 1500);
     }
 
-    // PWA installation
+    // Top Up functions
+    function openTopupModal() {
+      document.getElementById('topupModal').style.display = 'block';
+    }
+    
+    function closeTopupModal() {
+      document.getElementById('topupModal').style.display = 'none';
+      selectedPaymentMethod = '';
+    }
+    
+    function processTopup() {
+      const amount = parseInt(document.getElementById('topupAmount').value);
+      
+      if (!amount || amount < MIN_TOPUP) {
+        alert(`Minimum top up Rp ${MIN_TOPUP.toLocaleString('id-ID')}`);
+        return;
+      }
+      
+      if (!selectedPaymentMethod) {
+        alert('Pilih metode pembayaran terlebih dahulu');
+        return;
+      }
+      
+      // Simulate payment processing
+      alert(`Mengarahkan ke pembayaran ${selectedPaymentMethod} sebesar Rp ${amount.toLocaleString('id-ID')}...`);
+      
+      setTimeout(() => {
+        // Apply 10% bonus if premium
+        const bonus = isPremium ? Math.floor(amount * 0.1) : 0;
+        const totalAmount = amount + bonus;
+        
+        walletBalance += totalAmount;
+        updateWalletBalance();
+        closeTopupModal();
+        
+        if (isPremium && bonus > 0) {
+          alert(`Top up Rp ${amount.toLocaleString('id-ID')} berhasil! Bonus premium Rp ${bonus.toLocaleString('id-ID')} (Total: Rp ${totalAmount.toLocaleString('id-ID')})`);
+        } else {
+          alert(`Top up Rp ${amount.toLocaleString('id-ID')} berhasil!`);
+        }
+      }, 2000);
+    }
+      // Withdrawal functions
+    function openWithdrawModal() {
+      if (walletBalance < MIN_WITHDRAW) {
+        alert(`Saldo tidak mencukupi untuk penarikan. Minimum Rp ${MIN_WITHDRAW.toLocaleString('id-ID')}`);
+        return;
+      }
+      document.getElementById('withdrawModal').style.display = 'block';
+      updateWithdrawalInfo();
+    }
+    
+    function closeWithdrawModal() {
+      document.getElementById('withdrawModal').style.display = 'none';
+      selectedWithdrawalMethod = '';
+    }
+    
+    function processWithdrawal() {
+      const amount = parseInt(document.getElementById('withdrawAmount').value);
+      const fee = Math.floor(amount * WITHDRAWAL_FEE_PERCENT / 100);
+      const totalDeduct = amount + fee;
+      
+      if (!amount || amount < MIN_WITHDRAW) {
+        alert(`Minimum penarikan Rp ${MIN_WITHDRAW.toLocaleString('id-ID')}`);
+        return;
+      }
+      
+      if (totalDeduct > walletBalance) {
+        alert(`Saldo tidak mencukupi. Anda membutuhkan Rp ${totalDeduct.toLocaleString('id-ID')} (Rp ${amount.toLocaleString('id-ID')} + fee Rp ${fee.toLocaleString('id-ID')})`);
+        return;
+      }
+      
+      if (!selectedWithdrawalMethod) {
+        alert('Pilih metode penarikan terlebih dahulu');
+        return;
+      }
+      
+      // Simulate withdrawal processing
+      alert(`Memproses penarikan ke ${selectedWithdrawalMethod} sebesar Rp ${amount.toLocaleString('id-ID')}...`);
+      
+      setTimeout(() => {
+        walletBalance -= totalDeduct;
+        updateWalletBalance();
+        closeWithdrawModal();
+        alert(`Penarikan Rp ${amount.toLocaleString('id-ID')} berhasil! Biaya Rp ${fee.toLocaleString('id-ID')} telah dipotong.`);
+      }, 2000);
+    }
+    
+    // Premium functions
+    function openPremiumModal() {
+      document.getElementById('premiumModal').style.display = 'block';
+    }
+    
+    function closePremiumModal() {
+      document.getElementById('premiumModal').style.display = 'none';
+      selectedPremiumPaymentMethod = '';
+    }
+    
+    function processPremiumPayment() {
+      if (!selectedPremiumPaymentMethod) {
+        alert('Pilih metode pembayaran terlebih dahulu');
+        return;
+      }
+      
+      // Simulate premium payment
+      alert(`Mengarahkan ke pembayaran ${selectedPremiumPaymentMethod} sebesar Rp ${PREMIUM_PRICE.toLocaleString('id-ID')}...`);
+      
+      setTimeout(() => {
+        localStorage.setItem('premium', 'true');
+        isPremium = true;
+        closePremiumModal();
+        document.getElementById('premiumBtn').style.display = 'none';
+        
+        // Apply premium styles
+        document.querySelector('.dice').style.boxShadow = '0 0 20px gold';
+        alert('Pembayaran berhasil! Fitur premium telah diaktifkan. Anda sekarang mendapatkan bonus 10% setiap top up!');
+      }, 2000);
+    }
+    
+    // Payment method selection
+    function selectPayment(method) {
+      selectedPaymentMethod = method;
+      // Highlight selected method
+      const options = document.querySelectorAll('#topupModal .payment-option');
+      options.forEach(opt => {
+        opt.style.background = opt.onclick.toString().includes(method) ? '#475569' : '#334155';
+      });
+    }
+    
+    function selectWithdrawal(method) {
+      selectedWithdrawalMethod = method;
+      // Highlight selected method
+      const options = document.querySelectorAll('#withdrawModal .payment-option');
+      options.forEach(opt => {
+        opt.style.background = opt.onclick.toString().includes(method) ? '#475569' : '#334155';
+      });
+    }
+    
+    function selectPremiumPayment(method) {
+      selectedPremiumPaymentMethod = method;
+      // Highlight selected method
+      const options = document.querySelectorAll('#premiumModal .payment-option');
+      options.forEach(opt => {
+        opt.style.background = opt.onclick.toString().includes(method) ? '#475569' : '#334155';
+      });
+    }
+      // PWA installation
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       const installBtn = document.getElementById('installBtn');
@@ -362,10 +822,16 @@
         installBtn.style.display = 'none';
       });
     });
-
-    // Focus input on load
+    
+    // Initialize on load
     window.addEventListener('load', () => {
       document.getElementById('guess').focus();
+      initWallet();
+      
+      if (isPremium) {
+        document.getElementById('premiumBtn').style.display = 'none';
+        document.querySelector('.dice').style.boxShadow = '0 0 20px gold';
+      }
     });
   </script>
 </body>
