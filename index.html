@@ -1,846 +1,713 @@
-<!DOCTYPE html>
-<html lang="en">
+      <!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0ea5e9">
-  <meta name="description" content="Game Tebak Dadu Seru dengan Fitur Dompet Digital">
-  <title>Tebak Dadu - Dompet</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
-    body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(to bottom right, #0f172a, #1e293b);
-      color: white;
-      font-family: 'Orbitron', sans-serif;
-      text-align: center;
-      overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    header {
-      padding: 20px;
-      background: #0ea5e9;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
-
-    #game-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 160px);
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    /* CSS untuk dadu 3D */
-    .dice-container {
-      width: 100px;
-      height: 100px;
-      position: relative;
-      margin: 20px auto;
-      perspective: 1000px;
-    }
-
-    .dice {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 1.5s ease-out;
-    }
-
-    .dice-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: white;
-      border: 2px solid #333;
-      border-radius: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
-    }
-
-    .dot {
-      width: 15px;
-      height: 15px;
-      background: #333;
-      border-radius: 50%;
-      position: absolute;
-    }
-
-    /* Posisi masing-masing muka dadu */
-    .front  { transform: rotateY(0deg) translateZ(50px); }
-    .back   { transform: rotateY(180deg) translateZ(50px); }
-    .right  { transform: rotateY(90deg) translateZ(50px); }
-    .left   { transform: rotateY(-90deg) translateZ(50px); }
-    .top    { transform: rotateX(90deg) translateZ(50px); }
-    .bottom { transform: rotateX(-90deg) translateZ(50px); }
-
-    /* Pola titik untuk setiap muka dadu */
-    .face-1 .dot:nth-child(1) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    
-    .face-2 .dot:nth-child(1) { top: 25%; left: 25%; }
-    .face-2 .dot:nth-child(2) { bottom: 25%; right: 25%; }
-    
-    .face-3 .dot:nth-child(1) { top: 25%; left: 25%; }
-    .face-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .face-3 .dot:nth-child(3) { bottom: 25%; right: 25%; }
-    
-    .face-4 .dot:nth-child(1) { top: 25%; left: 25%; }
-    .face-4 .dot:nth-child(2) { top: 25%; right: 25%; }
-    .face-4 .dot:nth-child(3) { bottom: 25%; left: 25%; }
-    .face-4 .dot:nth-child(4) { bottom: 25%; right: 25%; }
-    
-    .face-5 .dot:nth-child(1) { top: 25%; left: 25%; }
-    .face-5 .dot:nth-child(2) { top: 25%; right: 25%; }
-    .face-5 .dot:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .face-5 .dot:nth-child(4) { bottom: 25%; left: 25%; }
-    .face-5 .dot:nth-child(5) { bottom: 25%; right: 25%; }
-    
-    .face-6 .dot:nth-child(1) { top: 25%; left: 25%; }
-    .face-6 .dot:nth-child(2) { top: 25%; right: 25%; }
-    .face-6 .dot:nth-child(3) { top: 50%; left: 25%; transform: translateY(-50%); }
-    .face-6 .dot:nth-child(4) { top: 50%; right: 25%; transform: translateY(-50%); }
-    .face-6 .dot:nth-child(5) { bottom: 25%; left: 25%; }
-    .face-6 .dot:nth-child(6) { bottom: 25%; right: 25%; }
-
-    #guess {
-      margin: 20px;
-      padding: 10px;
-      width: 100px;
-      font-size: 1.2rem;
-      text-align: center;
-      border-radius: 8px;
-      border: none;
-    }
-
-    button {
-      padding: 10px 30px;
-      font-size: 1.2rem;
-      background: #22c55e;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: #16a34a;
-    }
-
-    #result {
-      margin-top: 15px;
-      font-size: 1.1rem;
-      color: #fbbf24;
-      min-height: 24px;
-    }
-
-    footer {
-      padding: 10px;
-      background: #0ea5e9;
-      font-size: 0.9rem;
-    }
-
-    #installBtn {
-      display: none;
-      position: fixed;
-      bottom: 70px;
-      right: 20px;
-      background: #0ea5e9;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 24px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      z-index: 100;
-    }
-
-    /* Payment Modal Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.7);
-    }
-
-    .modal-content {
-      background-color: #1e293b;
-      margin: 10% auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    }
-
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .close:hover {
-      color: white;
-    }
-
-    .payment-option {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      margin: 10px 0;
-      background: #334155;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .payment-option:hover {
-      background: #475569;
-    }
-
-    .payment-icon {
-      width: 40px;
-      height: 40px;
-      margin-right: 15px;
-      object-fit: contain;
-    }
-
-    .premium-feature {
-      background: linear-gradient(to right, #f59e0b, #fbbf24);
-      color: #1e293b;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      margin-left: 10px;
-    }
-
-    #premiumBtn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #f59e0b;
-      color: #1e293b;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 18px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      z-index: 100;
-      font-weight: bold;
-    }
-
-    /* Wallet Styles */
-    .wallet-section {
-      background: #1e293b;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 10px 0;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      width: 100%;
-      max-width: 400px;
-    }
-    
-    .wallet-balance {
-      font-size: 1.5rem;
-      color: #fbbf24;
-      margin: 10px 0;
-    }
-    
-    .wallet-actions {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 15px;
-      gap: 10px;
-    }
-    
-    .wallet-btn {
-      padding: 8px 15px;
-      font-size: 0.9rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      flex: 1;
-    }
-    
-    .topup-btn {
-      background: #22c55e;
-      color: white;
-    }
-    
-    .withdraw-btn {
-      background: #ef4444;
-      color: white;
-    }
-    
-    .game-fee {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      margin-top: 5px;
-    }
-    
-    /* Modal Input Styles */
-    .amount-input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #1e293b;
-      color: white;
-      font-size: 1rem;
-    }
-    
-    .fee-info {
-      color: #f59e0b;
-      font-size: 0.9rem;
-      margin: 5px 0;
-    }
-
-    @media (max-width: 600px) {
-      .dice-container {
-        width: 80px;
-        height: 80px;
-      }
-      .dice-face {
-        border-radius: 8px;
-      }
-      .dot {
-        width: 12px;
-        height: 12px;
-      }
-      .front  { transform: rotateY(0deg) translateZ(40px); }
-      .back   { transform: rotateY(180deg) translateZ(40px); }
-      .right  { transform: rotateY(90deg) translateZ(40px); }
-      .left   { transform: rotateY(-90deg) translateZ(40px); }
-      .top    { transform: rotateX(90deg) translateZ(40px); }
-      .bottom { transform: rotateX(-90deg) translateZ(40px); }
-      
-      .modal-content {
-        margin: 20% auto;
-      }
-
-      #game-area {
-        padding: 10px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wajah Aneka - Game Candy Crush dengan Emoji</title>
+    <meta name="description" content="Game match-3 dengan emoji wajah yang menyenangkan">
+    <meta name="theme-color" content="#ff6b6b">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .score-container, .level-container {
+            text-align: center;
+        }
+        
+        .score, .level {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .emoji {
+            font-size: 2rem;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.5);
+            transition: transform 0.2s, background-color 0.2s;
+            user-select: none;
+        }
+        
+        .emoji:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .emoji.selected {
+            background-color: #ffd166;
+            transform: scale(1.1);
+        }
+        
+        .emoji.matched {
+            animation: matched 0.5s ease-out;
+        }
+        
+        @keyframes matched {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(to right, #ff6b6b, #ff9a9e);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instructions {
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .instructions h2 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 500px) {
+            .emoji {
+                font-size: 1.5rem;
+                padding: 8px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .score, .level {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Tebak Dadu</h1>
-  </header>
-  
-  <div id="game-area">
-    <p id="turnInfo">Giliran: Pemain 1</p>
+    <header>
+        <h1>Wajah Aneka</h1>
+        <p>Game match-3 dengan emoji wajah yang menyenangkan!</p>
+    </header>
     
-    <!-- Container untuk dadu 3D -->
-    <div class="dice-container">
-      <div class="dice" id="dice3d">
-        <!-- Muka dadu 1 -->
-        <div class="dice-face front face-1">
-          <div class="dot"></div>
+    <div class="game-info">
+        <div class="score-container">
+            <div>Poin</div>
+            <div class="score">0</div>
         </div>
-        <!-- Muka dadu 2 -->
-        <div class="dice-face back face-2">
-          <div class="dot"></div>
-          <div class="dot"></div>
+        <div class="level-container">
+            <div>Level</div>
+            <div class="level">1</div>
         </div>
-        <!-- Muka dadu 3 -->
-        <div class="dice-face right face-3">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-        <!-- Muka dadu 4 -->
-        <div class="dice-face left face-4">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-        <!-- Muka dadu 5 -->
-        <div class="dice-face top face-5">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-        <!-- Muka dadu 6 -->
-        <div class="dice-face bottom face-6">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-      </div>
     </div>
     
-    <!-- Section Dompet -->
-    <div class="wallet-section">
-      <h3>Dompet Game</h3>
-      <div class="wallet-balance">Saldo: Rp <span id="walletBalance">0</span></div>
-      <div class="game-fee">Biaya per main: Rp 100</div>
-      
-      <div class="wallet-actions">
-        <button class="wallet-btn topup-btn" onclick="openTopupModal()">Top Up</button>
-        <button class="wallet-btn withdraw-btn" onclick="openWithdrawModal()">Tarik Saldo</button>
-      </div>
+    <div class="game-board" id="gameBoard"></div>
+    
+    <div class="controls">
+        <button id="hintBtn">Bantuan</button>
+        <button id="shuffleBtn">Acak Ulang</button>
     </div>
     
-    <input type="number" id="guess" min="1" max="6" placeholder="Tebak (1-6)" />
-    <button onclick="checkBalanceBeforePlay()">Main (Rp 100)</button>
-    <p id="result"></p>
-    <p>Skor P1: <span id="score1">0</span> | Skor P2: <span id="score2">0</span></p>
-  </div>
-  
-  <!-- Modal Top Up -->
-  <div id="topupModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeTopupModal()">&times;</span>
-      <h2>Top Up Saldo</h2>
-      <p>Minimum top up: Rp 10.000</p>
-      
-      <input type="number" id="topupAmount" class="amount-input" placeholder="Masukkan jumlah" min="10000">
-      
-      <h3>Pilih Metode Pembayaran:</h3>
-      <div class="payment-option" onclick="selectPayment('dana')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_DANA.svg" alt="DANA" class="payment-icon">
-        <span>DANA</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectPayment('gopay')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="payment-icon">
-        <span>GoPay</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectPayment('ovo')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo.svg" alt="OVO" class="payment-icon">
-        <span>OVO</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectPayment('shopeepay')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/ShopeePay_logo.svg" alt="ShopeePay" class="payment-icon">
-        <span>ShopeePay</span>
-      </div>
-      
-      <button onclick="processTopup()" style="width: 100%; margin-top: 20px;">Top Up Sekarang</button>
+    <div class="instructions">
+        <h2>Cara Bermain</h2>
+        <p>1. Pilih dua emoji yang berdekatan untuk menukar posisinya</p>
+        <p>2. Buat garis horizontal atau vertikal minimal 3 emoji yang sama untuk mencocokkannya</p>
+        <p>3. Dapatkan poin dan naik level setiap 1000 poin</p>
+        <p>4. Semakin tinggi level, semakin sulit permainan</p>
     </div>
-  </div>
-  
-  <!-- Modal Tarik Saldo -->
-  <div id="withdrawModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeWithdrawModal()">&times;</span>
-      <h2>Tarik Saldo</h2>
-      <p>Minimum penarikan: Rp 10.000</p>
-      <p class="fee-info">Biaya penarikan: 10% dari jumlah</p>
-      
-      <input type="number" id="withdrawAmount" class="amount-input" placeholder="Masukkan jumlah" min="10000">
-      
-      <p id="withdrawFeeInfo" class="fee-info">Biaya: Rp 0</p>
-      <p id="withdrawTotalInfo">Jumlah diterima: Rp 0</p>
-      
-      <h3>Pilih Tujuan Penarikan:</h3>
-      <div class="payment-option" onclick="selectWithdrawal('dana')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_DANA.svg" alt="DANA" class="payment-icon">
-        <span>DANA</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectWithdrawal('gopay')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="payment-icon">
-        <span>GoPay</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectWithdrawal('ovo')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo.svg" alt="OVO" class="payment-icon">
-        <span>OVO</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectWithdrawal('shopeepay')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/ShopeePay_logo.svg" alt="ShopeePay" class="payment-icon">
-        <span>ShopeePay</span>
-      </div>
-      
-      <button onclick="processWithdrawal()" style="width: 100%; margin-top: 20px;">Tarik Sekarang</button>
-    </div>
-  </div>
-  
-  <!-- Modal Premium -->
-  <div id="premiumModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closePremiumModal()">&times;</span>
-      <h2>Upgrade ke Premium</h2>
-      <p>Dapatkan fitur eksklusif dengan upgrade ke versi premium:</p>
-      <ul>
-        <li>Dadu emas eksklusif</li>
-        <li>Efek suara lebih keren</li>
-        <li>Animasi kemenangan spesial</li>
-        <li>Bonus 10% setiap top up</li>
-      </ul>
-      <p>Hanya Rp 10.000</p>
-      
-      <h3>Pilih Metode Pembayaran:</h3>
-      
-      <div class="payment-option" onclick="selectPremiumPayment('dana')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_DANA.svg" alt="DANA" class="payment-icon">
-        <span>DANA</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectPremiumPayment('gopay')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="payment-icon">
-        <span>GoPay</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectPremiumPayment('ovo')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo.svg" alt="OVO" class="payment-icon">
-        <span>OVO</span>
-      </div>
-      
-      <div class="payment-option" onclick="selectPremiumPayment('shopeepay')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/ShopeePay_logo.svg" alt="ShopeePay" class="payment-icon">
-        <span>ShopeePay</span>
-      </div>
-      
-      <button onclick="processPremiumPayment()" style="width: 100%; margin-top: 20px;">Bayar Sekarang</button>
-    </div>
-  </div>
-  
-  <button id="installBtn" title="Install App">↓</button>
-  <button id="premiumBtn" title="Upgrade Premium" onclick="openPremiumModal()">★</button>
+    
+    <footer>
+        <p>Game Wajah Aneka &copy; 2023 - Mainkan dan bagikan!</p>
+    </footer>
 
-  <!-- Efek suara sebagai data URI (tanpa file eksternal) -->
-  <audio id="correctSound" preload="auto"></audio>
-  <audio id="wrongSound" preload="auto"></audio>
-
-  <footer>
-    &copy; 2023 Game Tebak Dadu. Made with 💙
-  </footer>
-
-  <script>
-    // Game state
-    let currentPlayer = 1;
-    let scores = [0, 0];
-    let diceFaces = [
-      'rotateX(0deg) rotateY(0deg)',
-      'rotateX(180deg) rotateY(0deg)',
-      'rotateX(0deg) rotateY(90deg)',
-      'rotateX(0deg) rotateY(-90deg)',
-      'rotateX(90deg) rotateY(0deg)',
-      'rotateX(-90deg) rotateY(0deg)'
-    ];
-    
-    // Wallet state
-    let walletBalance = parseInt(localStorage.getItem('walletBalance')) || 0;
-    let selectedPaymentMethod = '';
-    let selectedWithdrawalMethod = '';
-    let selectedPremiumPaymentMethod = '';
-    const GAME_FEE = 100;
-    const MIN_TOPUP = 10000;
-    const MIN_WITHDRAW = 10000;
-    const WITHDRAWAL_FEE_PERCENT = 10;
-    const PREMIUM_PRICE = 10000;
-    let isPremium = localStorage.getItem('premium') === 'true';
-
-    // Initialize wallet display
-    function initWallet() {
-      document.getElementById('walletBalance').textContent = walletBalance.toLocaleString('id-ID');
-      
-      // Update withdrawal info when amount changes
-      document.getElementById('withdrawAmount').addEventListener('input', updateWithdrawalInfo);
-    }
-    
-    // Update withdrawal fee info
-    function updateWithdrawalInfo() {
-      const amount = parseInt(document.getElementById('withdrawAmount').value) || 0;
-      const fee = Math.floor(amount * WITHDRAWAL_FEE_PERCENT / 100);
-      const received = amount - fee;
-      
-      document.getElementById('withdrawFeeInfo').textContent = `Biaya: Rp ${fee.toLocaleString('id-ID')}`;
-      document.getElementById('withdrawTotalInfo').textContent = `Jumlah diterima: Rp ${received.toLocaleString('id-ID')}`;
-    }
-    
-    // Check balance before playing
-    function checkBalanceBeforePlay() {
-      if (walletBalance < GAME_FEE) {
-        alert(`Saldo tidak cukup. Biaya per main Rp ${GAME_FEE}. Silakan top up terlebih dahulu.`);
-        openTopupModal();
-      } else {
-        deductGameFee();
-        rollDice();
-      }
-    }
-    
-    // Deduct game fee
-    function deductGameFee() {
-      walletBalance -= GAME_FEE;
-      updateWalletBalance();
-    }
-    
-    // Update wallet balance display
-    function updateWalletBalance() {
-      localStorage.setItem('walletBalance', walletBalance.toString());
-      document.getElementById('walletBalance').textContent = walletBalance.toLocaleString('id-ID');
-    }
-    
-    
-    //  fungsi rollDice untuk menambahkan bonus 10% jika tebakan benar
-    function rollDice() {
-      const guessInput = document.getElementById('guess');
-      const guess = parseInt(guessInput.value);
-      const resultDisplay = document.getElementById('result');
-      const dice = document.getElementById('dice3d');
-      
-      if (isNaN(guess) || guess < 1 || guess > 6) {
-        resultDisplay.textContent = 'Masukkan tebakan yang valid (1-6)!';
-        return;
-      }
-      
-      // Disable button during animation
-      document.querySelector('button').disabled = true;
-      
-      // Random rotation and result
-      const randomFace = Math.floor(Math.random() * 6) + 1;
-      const rotations = Math.floor(Math.random() * 3) + 5;
-      
-      // Animate dice
-      dice.style.transition = 'transform 1.5s ease-out';
-      dice.style.transform = `rotateX(${rotations * 360}deg) rotateY(${rotations * 360}deg) ${diceFaces[randomFace-1]}`;
-      
-      // Check result after animation
-      setTimeout(() => {
-        if (guess === randomFace) {
-          // Hitung bonus 10% dari modal (Rp 100)
-          const bonus = Math.floor(GAME_FEE * 0.1);
-          const totalWin = GAME_FEE + bonus;
-          
-          scores[currentPlayer-1] += 10;
-          walletBalance += totalWin; // Kembalikan modal + bonus 10%
-          updateWalletBalance();
-          
-          resultDisplay.textContent = `Benar! Dadu menunjukkan ${randomFace}. Anda dapat Rp ${totalWin} (Modal Rp ${GAME_FEE} + Bonus Rp ${bonus})`;
-          document.getElementById(`score${currentPlayer}`).textContent = scores[currentPlayer-1];
-          document.getElementById('correctSound').play();
-          
-          // Premium celebration
-          if (isPremium) {
-            resultDisplay.style.color = 'gold';
-            resultDisplay.style.fontWeight = 'bold';
-            resultDisplay.style.textShadow = '0 0 10px gold';
+    <script>
+        // Daftar emoji untuk level rendah
+        const basicEmojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😭', '😉', '😗', '😙', '😚', '🥰', '😍', '🤩', '🙃', '🙂', '🥲', '🥹', '😊', '☺️', '😌', '😏', '🤤', '😋', '😛', '😝', '😜', '🤪', '🥴', '😔', '🥺', '😬', '😑', '😐', '😶', '🫡', '🤔', '🤫', '🤭', '🤗', '🥱', '🫣', '😱', '🤨', '🧐', '😒', '🙄', '😮‍💨', '😠', '😤', '😞', '😓', '😟', '😥', '😢', '☹️', '🙁', '🫤', '😕', '😧', '😦', '😯', '😳', '😖', '😵', '😫', '😩'];
+        
+        // Daftar emoji untuk level tinggi
+        const specialEmojis = ['❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '🩷', '🩵', '🩶', '♥️', '♦️', '♣️', '♠️', '♈', '♉', '♒', '♑', '♐', '♏', '♎', '♍', '♌', '♋', '♊', '♓', '⛎', '♀️', '♂️', '⚧️'];
+        
+        // Konstanta game
+        const BOARD_SIZE = 8;
+        const MIN_MATCH = 3;
+        const POINTS_PER_MATCH = 100;
+        const LEVEL_UP_SCORE = 1000;
+        
+        // State game
+        let score = 0;
+        let level = 1;
+        let selectedEmoji = null;
+        let board = [];
+        let isSwapping = false;
+        let isProcessing = false;
+        
+        // Elemen DOM
+        const gameBoard = document.getElementById('gameBoard');
+        const scoreDisplay = document.querySelector('.score');
+        const levelDisplay = document.querySelector('.level');
+        const hintBtn = document.getElementById('hintBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        
+        // Inisialisasi game
+        function initGame() {
+            createBoard();
+            updateDisplay();
+            
+            // Event listeners
+            hintBtn.addEventListener('click', showHint);
+            shuffleBtn.addEventListener('click', shuffleBoard);
+        }
+        
+        // Membuat papan game
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            board = [];
+            
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                board[row] = [];
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const emoji = getRandomEmoji();
+                    board[row][col] = emoji;
+                    
+                    const emojiElement = document.createElement('div');
+                    emojiElement.className = 'emoji';
+                    emojiElement.textContent = emoji;
+                    emojiElement.dataset.row = row;
+                    emojiElement.dataset.col = col;
+                    
+                    emojiElement.addEventListener('click', handleEmojiClick);
+                    
+                    gameBoard.appendChild(emojiElement);
+                }
+            }
+            
+            // Periksa dan hilangkan match awal
             setTimeout(() => {
-              resultDisplay.style.color = '#fbbf24';
-              resultDisplay.style.textShadow = 'none';
-            }, 2000);
-          }
-        } else {
-          resultDisplay.textContent = `Salah! Dadu menunjukkan ${randomFace}. Anda kalah Rp ${GAME_FEE}`;
-          document.getElementById('wrongSound').play();
+                processMatches();
+            }, 300);
         }
         
-        // Switch player
-        currentPlayer = currentPlayer === 1 ? 2 : 1;
-        document.getElementById('turnInfo').textContent = `Giliran: Pemain ${currentPlayer}`;
-        
-        // Clear input and enable button
-        guessInput.value = '';
-        guessInput.focus();
-        document.querySelector('button').disabled = false;
-      }, 1500);
-    }
-
-    // Top Up functions
-    function openTopupModal() {
-      document.getElementById('topupModal').style.display = 'block';
-    }
-    
-    function closeTopupModal() {
-      document.getElementById('topupModal').style.display = 'none';
-      selectedPaymentMethod = '';
-    }
-    
-    function processTopup() {
-      const amount = parseInt(document.getElementById('topupAmount').value);
-      
-      if (!amount || amount < MIN_TOPUP) {
-        alert(`Minimum top up Rp ${MIN_TOPUP.toLocaleString('id-ID')}`);
-        return;
-      }
-      
-      if (!selectedPaymentMethod) {
-        alert('Pilih metode pembayaran terlebih dahulu');
-        return;
-      }
-      
-      // Simulate payment processing
-      alert(`Mengarahkan ke pembayaran ${selectedPaymentMethod} sebesar Rp ${amount.toLocaleString('id-ID')}...`);
-      
-      setTimeout(() => {
-        // Apply 10% bonus if premium
-        const bonus = isPremium ? Math.floor(amount * 0.1) : 0;
-        const totalAmount = amount + bonus;
-        
-        walletBalance += totalAmount;
-        updateWalletBalance();
-        closeTopupModal();
-        
-        if (isPremium && bonus > 0) {
-          alert(`Top up Rp ${amount.toLocaleString('id-ID')} berhasil! Bonus premium Rp ${bonus.toLocaleString('id-ID')} (Total: Rp ${totalAmount.toLocaleString('id-ID')})`);
-        } else {
-          alert(`Top up Rp ${amount.toLocaleString('id-ID')} berhasil!`);
+        // Mendapatkan emoji acak berdasarkan level
+        function getRandomEmoji() {
+            // Di level tinggi, tambahkan emoji khusus
+            const emojiPool = level > 5 ? [...basicEmojis, ...specialEmojis] : basicEmojis;
+            return emojiPool[Math.floor(Math.random() * emojiPool.length)];
         }
-      }, 2000);
-    }
-      // Withdrawal functions
-    function openWithdrawModal() {
-      if (walletBalance < MIN_WITHDRAW) {
-        alert(`Saldo tidak mencukupi untuk penarikan. Minimum Rp ${MIN_WITHDRAW.toLocaleString('id-ID')}`);
-        return;
-      }
-      document.getElementById('withdrawModal').style.display = 'block';
-      updateWithdrawalInfo();
-    }
-    
-    function closeWithdrawModal() {
-      document.getElementById('withdrawModal').style.display = 'none';
-      selectedWithdrawalMethod = '';
-    }
-    
-    function processWithdrawal() {
-      const amount = parseInt(document.getElementById('withdrawAmount').value);
-      const fee = Math.floor(amount * WITHDRAWAL_FEE_PERCENT / 100);
-      const totalDeduct = amount + fee;
-      
-      if (!amount || amount < MIN_WITHDRAW) {
-        alert(`Minimum penarikan Rp ${MIN_WITHDRAW.toLocaleString('id-ID')}`);
-        return;
-      }
-      
-      if (totalDeduct > walletBalance) {
-        alert(`Saldo tidak mencukupi. Anda membutuhkan Rp ${totalDeduct.toLocaleString('id-ID')} (Rp ${amount.toLocaleString('id-ID')} + fee Rp ${fee.toLocaleString('id-ID')})`);
-        return;
-      }
-      
-      if (!selectedWithdrawalMethod) {
-        alert('Pilih metode penarikan terlebih dahulu');
-        return;
-      }
-      
-      // Simulate withdrawal processing
-      alert(`Memproses penarikan ke ${selectedWithdrawalMethod} sebesar Rp ${amount.toLocaleString('id-ID')}...`);
-      
-      setTimeout(() => {
-        walletBalance -= totalDeduct;
-        updateWalletBalance();
-        closeWithdrawModal();
-        alert(`Penarikan Rp ${amount.toLocaleString('id-ID')} berhasil! Biaya Rp ${fee.toLocaleString('id-ID')} telah dipotong.`);
-      }, 2000);
-    }
-    
-    // Premium functions
-    function openPremiumModal() {
-      document.getElementById('premiumModal').style.display = 'block';
-    }
-    
-    function closePremiumModal() {
-      document.getElementById('premiumModal').style.display = 'none';
-      selectedPremiumPaymentMethod = '';
-    }
-    
-    function processPremiumPayment() {
-      if (!selectedPremiumPaymentMethod) {
-        alert('Pilih metode pembayaran terlebih dahulu');
-        return;
-      }
-      
-      // Simulate premium payment
-      alert(`Mengarahkan ke pembayaran ${selectedPremiumPaymentMethod} sebesar Rp ${PREMIUM_PRICE.toLocaleString('id-ID')}...`);
-      
-      setTimeout(() => {
-        localStorage.setItem('premium', 'true');
-        isPremium = true;
-        closePremiumModal();
-        document.getElementById('premiumBtn').style.display = 'none';
         
-        // Apply premium styles
-        document.querySelector('.dice').style.boxShadow = '0 0 20px gold';
-        alert('Pembayaran berhasil! Fitur premium telah diaktifkan. Anda sekarang mendapatkan bonus 10% setiap top up!');
-      }, 2000);
-    }
-    
-    // Payment method selection
-    function selectPayment(method) {
-      selectedPaymentMethod = method;
-      // Highlight selected method
-      const options = document.querySelectorAll('#topupModal .payment-option');
-      options.forEach(opt => {
-        opt.style.background = opt.onclick.toString().includes(method) ? '#475569' : '#334155';
-      });
-    }
-    
-    function selectWithdrawal(method) {
-      selectedWithdrawalMethod = method;
-      // Highlight selected method
-      const options = document.querySelectorAll('#withdrawModal .payment-option');
-      options.forEach(opt => {
-        opt.style.background = opt.onclick.toString().includes(method) ? '#475569' : '#334155';
-      });
-    }
-    
-    function selectPremiumPayment(method) {
-      selectedPremiumPaymentMethod = method;
-      // Highlight selected method
-      const options = document.querySelectorAll('#premiumModal .payment-option');
-      options.forEach(opt => {
-        opt.style.background = opt.onclick.toString().includes(method) ? '#475569' : '#334155';
-      });
-    }
-      // PWA installation
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      const installBtn = document.getElementById('installBtn');
-      installBtn.style.display = 'block';
-      
-      installBtn.addEventListener('click', () => {
-        e.prompt();
-        installBtn.style.display = 'none';
-      });
-    });
-    
-    // Initialize on load
-    window.addEventListener('load', () => {
-      document.getElementById('guess').focus();
-      initWallet();
-      
-      if (isPremium) {
-        document.getElementById('premiumBtn').style.display = 'none';
-        document.querySelector('.dice').style.boxShadow = '0 0 20px gold';
-      }
-    });
-  </script>
+        // Menangani klik emoji
+        function handleEmojiClick(event) {
+            if (isProcessing) return;
+            
+            const row = parseInt(event.target.dataset.row);
+            const col = parseInt(event.target.dataset.col);
+            
+            if (!selectedEmoji) {
+                // Pilih emoji pertama
+                selectedEmoji = event.target;
+                selectedEmoji.classList.add('selected');
+            } else {
+                // Pilih emoji kedua
+                const firstRow = parseInt(selectedEmoji.dataset.row);
+                const firstCol = parseInt(selectedEmoji.dataset.col);
+                
+                // Periksa apakah emoji berdekatan
+                if ((Math.abs(firstRow - row) === 1 && firstCol === col) || 
+                    (Math.abs(firstCol - col) === 1 && firstRow === row)) {
+                    // Lakukan pertukaran
+                    swapEmojis(firstRow, firstCol, row, col);
+                }
+                
+                // Reset seleksi
+                selectedEmoji.classList.remove('selected');
+                selectedEmoji = null;
+            }
+        }
+        
+        // Menukar dua emoji
+        function swapEmojis(row1, col1, row2, col2) {
+            isProcessing = true;
+            
+            // Simpan nilai emoji
+            const temp = board[row1][col1];
+            board[row1][col1] = board[row2][col2];
+            board[row2][col2] = temp;
+            
+            // Update tampilan
+            updateBoardView();
+            
+            // Periksa apakah pertukaran menghasilkan match
+            setTimeout(() => {
+                if (!checkMatches()) {
+                    // Jika tidak ada match, kembalikan pertukaran
+                    const temp = board[row1][col1];
+                    board[row1][col1] = board[row2][col2];
+                    board[row2][col2] = temp;
+                    updateBoardView();
+                    isProcessing = false;
+                } else {
+                    // Jika ada match, proses match
+                    processMatches();
+                }
+            }, 300);
+        }
+        
+        // Memperbarui tampilan papan
+        function updateBoardView() {
+            const emojiElements = gameBoard.querySelectorAll('.emoji');
+            emojiElements.forEach(element => {
+                const row = parseInt(element.dataset.row);
+                const col = parseInt(element.dataset.col);
+                element.textContent = board[row][col];
+            });
+        }
+        
+        // Memeriksa apakah ada match di papan
+        function checkMatches() {
+            let hasMatches = false;
+            
+            // Periksa horizontal matches
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                    if (board[row][col] && 
+                        board[row][col] === board[row][col + 1] && 
+                        board[row][col] === board[row][col + 2]) {
+                        hasMatches = true;
+                    }
+                }
+            }
+            
+            // Periksa vertical matches
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                    if (board[row][col] && 
+                        board[row][col] === board[row + 1][col] && 
+                        board[row][col] === board[row + 2][col]) {
+                        hasMatches = true;
+                    }
+                }
+            }
+            
+            return hasMatches;
+        }
+        
+        // Memproses semua match di papan
+        function processMatches() {
+            const matches = findAllMatches();
+            
+            if (matches.length === 0) {
+                isProcessing = false;
+                
+                // Jika tidak ada moves yang valid, acak ulang
+                if (!hasValidMoves()) {
+                    alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');
+                    shuffleBoard();
+                }
+                
+                return;
+            }
+            
+            // Hilangkan match dan tambahkan skor
+            removeMatches(matches);
+            addScore(matches.length * POINTS_PER_MATCH);
+            
+            // Isi ulang papan
+            setTimeout(() => {
+                fillBoard();
+                processMatches(); // Periksa lagi untuk cascade matches
+            }, 500);
+        }
+        
+        // Mencari semua match di papan
+        function findAllMatches() {
+            const matches = [];
+            
+            // Periksa horizontal matches
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE - 2; col++) {
+                    if (board[row][col] && 
+                        board[row][col] === board[row][col + 1] && 
+                        board[row][col] === board[row][col + 2]) {
+                        
+                        let matchLength = 3;
+                        while (col + matchLength < BOARD_SIZE && 
+                               board[row][col] === board[row][col + matchLength]) {
+                            matchLength++;
+                        }
+                        
+                        for (let i = 0; i < matchLength; i++) {
+                            matches.push({row, col: col + i});
+                        }
+                        
+                        col += matchLength - 1;
+                    }
+                }
+            }
+            
+            // Periksa vertical matches
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                for (let row = 0; row < BOARD_SIZE - 2; row++) {
+                    if (board[row][col] && 
+                        board[row][col] === board[row + 1][col] && 
+                        board[row][col] === board[row + 2][col]) {
+                        
+                        let matchLength = 3;
+                        while (row + matchLength < BOARD_SIZE && 
+                               board[row][col] === board[row + matchLength][col]) {
+                            matchLength++;
+                        }
+                        
+                        for (let i = 0; i < matchLength; i++) {
+                            matches.push({row: row + i, col});
+                        }
+                        
+                        row += matchLength - 1;
+                    }
+                }
+            }
+            
+            return matches;
+        }
+        
+        // Menghapus match dari papan
+        function removeMatches(matches) {
+            // Hilangkan duplikat (jika ada emoji yang termasuk dalam match horizontal dan vertikal)
+            const uniqueMatches = matches.filter((match, index, self) =>
+                index === self.findIndex(m => m.row === match.row && m.col === match.col)
+            );
+            
+            // Tandai emoji yang matched untuk animasi
+            const emojiElements = gameBoard.querySelectorAll('.emoji');
+            uniqueMatches.forEach(match => {
+                const element = Array.from(emojiElements).find(el => 
+                    parseInt(el.dataset.row) === match.row && 
+                    parseInt(el.dataset.col) === match.col
+                );
+                
+                if (element) {
+                    element.classList.add('matched');
+                }
+                
+                board[match.row][match.col] = null;
+            });
+            
+            // Hapus kelas matched setelah animasi selesai
+            setTimeout(() => {
+                emojiElements.forEach(element => {
+                    element.classList.remove('matched');
+                });
+            }, 500);
+        }
+        
+        // Mengisi papan setelah match dihilangkan
+        function fillBoard() {
+            // Turunkan emoji dari atas
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                let emptySpaces = 0;
+                
+                for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+                    if (board[row][col] === null) {
+                        emptySpaces++;
+                    } else if (emptySpaces > 0) {
+                        board[row + emptySpaces][col] = board[row][col];
+                        board[row][col] = null;
+                    }
+                }
+                
+                // Isi bagian atas dengan emoji baru
+                for (let row = 0; row < emptySpaces; row++) {
+                    board[row][col] = getRandomEmoji();
+                }
+            }
+            
+            updateBoardView();
+        }
+        
+        // Memeriksa apakah ada gerakan yang valid
+        function hasValidMoves() {
+            // Simulasikan semua kemungkinan pertukaran dan periksa apakah menghasilkan match
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    // Periksa pertukaran ke kanan
+                    if (col < BOARD_SIZE - 1) {
+                        // Simpan nilai asli
+                        const temp = board[row][col];
+                        board[row][col] = board[row][col + 1];
+                        board[row][col + 1] = temp;
+                        
+                        // Periksa apakah menghasilkan match
+                        const hasMatch = checkMatches();
+                        
+                        // Kembalikan nilai
+                        board[row][col + 1] = board[row][col];
+                        board[row][col] = temp;
+                        
+                        if (hasMatch) return true;
+                    }
+                    
+                    // Periksa pertukaran ke bawah
+                    if (row < BOARD_SIZE - 1) {
+                        // Simpan nilai asli
+                        const temp = board[row][col];
+                        board[row][col] = board[row + 1][col];
+                        board[row + 1][col] = temp;
+                        
+                        // Periksa apakah menghasilkan match
+                        const hasMatch = checkMatches();
+                        
+                        // Kembalikan nilai
+                        board[row + 1][col] = board[row][col];
+                        board[row][col] = temp;
+                        
+                        if (hasMatch) return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // Menambahkan skor dan memeriksa kenaikan level
+        function addScore(points) {
+            score += points;
+            
+            // Naik level setiap 1000 poin
+            const newLevel= Math.floor(score / LEVEL_UP_SCORE) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                alert(`Selamat! Anda mencapai level ${level}!`);
+            }
+            
+            updateDisplay();
+        }
+        
+        // Memperbarui tampilan skor dan level
+        function updateDisplay() {
+            scoreDisplay.textContent = score;
+            levelDisplay.textContent = level;
+        }
+        
+        // Mengacak ulang papan
+        function shuffleBoard() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            
+            // Buat papan baru
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    board[row][col] = getRandomEmoji();
+                }
+            }
+            
+            updateBoardView();
+            
+            // Pastikan ada moves yang valid
+            if (!hasValidMoves()) {
+                shuffleBoard(); // Acak ulang lagi jika tidak ada moves valid
+            } else {
+                isProcessing = false;
+            }
+        }
+        
+        // Menunjukkan petunjuk (highlight move yang valid)
+        function showHint() {
+            if (isProcessing) return;
+            
+            // Cari move yang valid
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    // Periksa pertukaran ke kanan
+                    if (col < BOARD_SIZE - 1) {
+                        // Simpan nilai asli
+                        const temp = board[row][col];
+                        board[row][col] = board[row][col + 1];
+                        board[row][col + 1] = temp;
+                        
+                        // Periksa apakah menghasilkan match
+                        const hasMatch = checkMatches();
+                        
+                        // Kembalikan nilai
+                        board[row][col + 1] = board[row][col];
+                        board[row][col] = temp;
+                        
+                        if (hasMatch) {
+                            // Highlight kedua emoji
+                            const emojiElements = gameBoard.querySelectorAll('.emoji');
+                            const firstElement = Array.from(emojiElements).find(el => 
+                                parseInt(el.dataset.row) === row && 
+                                parseInt(el.dataset.col) === col
+                            );
+                            
+                            const secondElement = Array.from(emojiElements).find(el => 
+                                parseInt(el.dataset.row) === row && 
+                                parseInt(el.dataset.col) === col + 1
+                            );
+                            
+                            if (firstElement && secondElement) {
+                                firstElement.classList.add('selected');
+                                secondElement.classList.add('selected');
+                                
+                                setTimeout(() => {
+                                    firstElement.classList.remove('selected');
+                                    secondElement.classList.remove('selected');
+                                }, 1000);
+                                
+                                return;
+                            }
+                        }
+                    }
+                      // Periksa pertukaran ke bawah
+                    if (row < BOARD_SIZE - 1) {
+                        // Simpan nilai asli
+                        const temp = board[row][col];
+                        board[row][col] = board[row + 1][col];
+                        board[row + 1][col] = temp;
+                        
+                        // Periksa apakah menghasilkan match
+                        const hasMatch = checkMatches();
+                        
+                        // Kembalikan nilai
+                        board[row + 1][col] = board[row][col];
+                        board[row][col] = temp;
+                        
+                        if (hasMatch) {
+                            // Highlight kedua emoji
+                            const emojiElements = gameBoard.querySelectorAll('.emoji');
+                            const firstElement = Array.from(emojiElements).find(el => 
+                                parseInt(el.dataset.row) === row && 
+                                parseInt(el.dataset.col) === col
+                            );
+                            
+                            const secondElement = Array.from(emojiElements).find(el => 
+                                parseInt(el.dataset.row) === row + 1 && 
+                                parseInt(el.dataset.col) === col
+                            );
+                            
+                            if (firstElement && secondElement) {
+                                firstElement.classList.add('selected');
+                                secondElement.classList.add('selected');
+                                
+                                setTimeout(() => {
+                                    firstElement.classList.remove('selected');
+                                    secondElement.classList.remove('selected');
+                                }, 1000);
+                                
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Inisialisasi game saat halaman dimuat
+        window.addEventListener('load', initGame);
+        
+        // Service Worker untuk PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
