@@ -6,9 +6,6 @@
     <title>Wajah Aneka - Game Candy Crush dengan Emoji</title>
     <meta name="description" content="Game match-3 dengan emoji wajah yang menyenangkan">
     <meta name="theme-color" content="#ff6b6b">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon-192x192.png" sizes="192x192">
-  <link rel="icon" href="icon-512x512.png" sizes="512x512">
     <style>
         * {
             box-sizing: border-box;
@@ -387,10 +384,10 @@
 
     <script>
         // Daftar emoji untuk level rendah
-        const basicEmojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😭', '😉', '😗', '😙', '😚', '🥰', '😍', '🤩', '🙃', '🙂', '🥲', '🥹', '😊', '☺️', '😌', '😏', '🤤', '😋', '😛', '😝', '😜', '🤪', '🥴', '😔', '🥺', '😬', '😑', '😐', '😶', '🫡', '🤔', '🤫', '🤭', '🤗', '🥱', '🫣', '😱', '🤨', '🧐', '😒', '🙄', '😮‍💨', '😠', '😤', '😞', '😓', '😟', '😥', '😢', '☹️', '🙁', '🫤', '😕', '😧', '😦', '😯', '😳', '😖', '😵', '😫', '😩'];
+        const basicEmojis = ['😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😭', '😉', '😗', '😙', '😚', '😍', '🤩', '🙃', '🙂', '🥲', '🥹', '😊', '☺️', '😌', '😏', '🤤', '😋', '😛', '😩'];
         
         // Daftar emoji untuk level tinggi
-        const specialEmojis = ['❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '🩷', '🩵', '🩶', '♥️', '♦️', '♣️', '♠️', '♈', '♉', '♒', '♑', '♐', '♏', '♎', '♍', '♌', '♋', '♊', '♓', '⛎', '♀️', '♂️', '⚧️'];
+        const specialEmojis = ['❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '🩷', '🩵', '🩶', '♥️', '♦️', '♣️', '♠️',];
         
         // Konstanta game
         const BOARD_SIZE = 8;
@@ -592,6 +589,9 @@
                     updateBoardView();
                     isProcessing = false;
                     gameBoard.classList.remove('processing');
+                    
+                    // Periksa apakah masih ada gerakan yang valid
+                    checkAndShuffleIfNoMoves();
                 } else {
                     // Jika ada match, proses match
                     processMatches();
@@ -622,10 +622,10 @@
                 }
             }
             
-            // Periksa vertical matches
-            for (let col = 0; col < BOARD_SIZE; col++) {
+            // Periksa vertical match
+for (let col = 0; col < BOARD_SIZE; col++) {
                 for (let row = 0; row < BOARD_SIZE - 2; row++) {
-           if (board[row][col] && 
+                    if (board[row][col] && 
                         board[row][col] === board[row + 1][col] && 
                         board[row][col] === board[row + 2][col]) {
                         return true;
@@ -644,13 +644,8 @@
                 isProcessing = false;
                 gameBoard.classList.remove('processing');
                 
-                // Jika tidak ada moves yang valid, acak ulang
-                if (!hasValidMoves()) {
-                    setTimeout(() => {
-                        alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');
-                        shuffleBoard();
-                    }, 300);
-                }
+                // Periksa apakah masih ada gerakan yang valid
+                checkAndShuffleIfNoMoves();
                 
                 return;
             }
@@ -693,8 +688,7 @@
                     }
                 }
             }
-            
-            // Periksa vertical matches
+// Periksa vertical matches
             for (let col = 0; col < BOARD_SIZE; col++) {
                 for (let row = 0; row < BOARD_SIZE - 2; row++) {
                     if (board[row][col] && 
@@ -740,6 +734,7 @@
                 board[match.row][match.col] = null;
             });
         }
+        
         // Mengisi papan setelah match dihilangkan
         function fillBoard() {
             // Turunkan emoji dari atas
@@ -770,6 +765,16 @@
                     element.classList.add('new');
                     setTimeout(() => element.classList.remove('new'), 300);
                 });
+                
+                // Periksa apakah ada match setelah mengisi papan
+                setTimeout(() => {
+                    if (checkMatches()) {
+                        processMatches();
+                    } else {
+                        // Periksa apakah masih ada gerakan yang valid
+                        checkAndShuffleIfNoMoves();
+                    }
+                }, 400);
             }, 50);
         }
         
@@ -815,6 +820,25 @@
             }
             
             return false;
+        }
+        
+        // Memeriksa dan mengacak ulang jika tidak ada gerakan yang valid
+        function checkAndShuffleIfNoMoves() {
+            if (!hasValidMoves()) {
+                setTimeout(() => {
+                    alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');
+                    shuffleBoard();
+                }, 300);
+            }
+        }
+// Memeriksa dan mengacak ulang jika tidak ada gerakan yang valid
+        function checkAndShuffleIfNoMoves() {
+            if (!hasValidMoves()) {
+                setTimeout(() => {
+                    alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');
+                    shuffleBoard();
+                }, 300);
+            }
         }
         
         // Menambahkan skor dan memeriksa kenaikan level
@@ -872,7 +896,8 @@
                 gameBoard.classList.remove('processing');
             }
         }
-// Menunjukkan petunjuk (highlight move yang valid)
+        
+        // Menunjukkan petunjuk (highlight move yang valid)
         function showHint() {
             if (isProcessing) return;
             
@@ -919,8 +944,7 @@
                             }
                         }
                     }
-                    
-                    // Periksa pertukaran ke bawah
+// Periksa pertukaran ke bawah
                     if (row < BOARD_SIZE - 1) {
                         // Simpan nilai asli
                         const temp = board[row][col];
