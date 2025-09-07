@@ -1,4 +1,4 @@
-      <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -7,14 +7,13 @@
     <meta name="description" content="Game match-3 dengan emoji wajah yang menyenangkan">
     <meta name="theme-color" content="#ff6b6b">
     <link rel="manifest" href="manifest.json">
-        <link rel="icon" href="icon-192x192.png" sizes="192x192">
-  <link rel="icon" href="icon-512x512.png" sizes="512x512">
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
         }
         
         body {
@@ -25,6 +24,7 @@
             align-items: center;
             padding: 20px;
             color: #333;
+            overflow-x: hidden;
         }
         
         header {
@@ -85,6 +85,8 @@
             background-color: rgba(255, 255, 255, 0.5);
             transition: transform 0.2s, background-color 0.2s;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .emoji:hover {
@@ -155,6 +157,15 @@
             line-height: 1.5;
         }
         
+        .swipe-info {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+        
         footer {
             margin-top: auto;
             text-align: center;
@@ -176,6 +187,26 @@
             .score, .level {
                 font-size: 1.5rem;
             }
+            
+            .swipe-info {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .emoji {
+                font-size: 1.3rem;
+                padding: 6px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -196,6 +227,10 @@
         </div>
     </div>
     
+    <div class="swipe-info">
+        Geser (swipe) emoji untuk menukar posisi
+    </div>
+    
     <div class="game-board" id="gameBoard"></div>
     
     <div class="controls">
@@ -205,7 +240,7 @@
     
     <div class="instructions">
         <h2>Cara Bermain</h2>
-        <p>1. Pilih dua emoji yang berdekatan untuk menukar posisinya</p>
+        <p>1. Klik atau geser dua emoji yang berdekatan untuk menukar posisinya</p>
         <p>2. Buat garis horizontal atau vertikal minimal 3 emoji yang sama untuk mencocokkannya</p>
         <p>3. Dapatkan poin dan naik level setiap 1000 poin</p>
         <p>4. Semakin tinggi level, semakin sulit permainan</p>
@@ -235,6 +270,8 @@
         let board = [];
         let isSwapping = false;
         let isProcessing = false;
+        let touchStartX, touchStartY;
+        let touchEndX, touchEndY;
         
         // Elemen DOM
         const gameBoard = document.getElementById('gameBoard');
@@ -251,6 +288,10 @@
             // Event listeners
             hintBtn.addEventListener('click', showHint);
             shuffleBtn.addEventListener('click', shuffleBoard);
+            
+            // Event listener untuk touch devices
+            gameBoard.addEventListener('touchstart', handleTouchStart, false);
+            gameBoard.addEventListener('touchend', handleTouchEnd, false);
         }
         
         // Membuat papan game
@@ -316,6 +357,61 @@
                 selectedEmoji.classList.remove('selected');
                 selectedEmoji = null;
             }
+        }
+        
+        // Menangani touch start untuk swipe
+        function handleTouchStart(event) {
+            if (isProcessing) return;
+            
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            
+            // Temukan elemen yang disentuh
+            const element = document.elementFromPoint(touchStartX, touchStartY);
+            if (element && element.classList.contains('emoji')) {
+                selectedEmoji = element;
+                selectedEmoji.classList.add('selected');
+            }
+        }
+        
+        // Menangani touch end untuk swipe
+        function handleTouchEnd(event) {
+            if (!selectedEmoji || isProcessing) return;
+            
+            const touch = event.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+            
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            const minSwipeDistance = 30; // Jarak minimum untuk dianggap sebagai swipe
+            
+            if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
+                const firstRow = parseInt(selectedEmoji.dataset.row);
+                const firstCol = parseInt(selectedEmoji.dataset.col);
+                
+                let targetRow = firstRow;
+                let targetCol = firstCol;
+                
+                // Tentukan arah swipe
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    // Horizontal swipe
+                    targetCol += dx > 0 ? 1 : -1;
+                } else {
+                    // Vertical swipe
+                    targetRow += dy > 0 ? 1 : -1;
+                }
+                
+                // Pastikan target dalam batas papan
+                if (targetRow >= 0 && targetRow < BOARD_SIZE && targetCol >= 0 && targetCol < BOARD_SIZE) {
+                    swapEmojis(firstRow, firstCol, targetRow, targetCol);
+                }
+            }
+            
+            // Reset seleksi
+            selectedEmoji.classList.remove('selected');
+            selectedEmoji = null;
         }
         
         // Menukar dua emoji
@@ -477,8 +573,7 @@
                     parseInt(el.dataset.row) === match.row && 
                     parseInt(el.dataset.col) === match.col
                 );
-                
-                if (element) {
+              if (element) {
                     element.classList.add('matched');
                 }
                 
@@ -566,7 +661,7 @@
             score += points;
             
             // Naik level setiap 1000 poin
-            const newLevel= Math.floor(score / LEVEL_UP_SCORE) + 1;
+            const newLevel = Math.floor(score / LEVEL_UP_SCORE) + 1;
             if (newLevel > level) {
                 level = newLevel;
                 alert(`Selamat! Anda mencapai level ${level}!`);
@@ -580,8 +675,7 @@
             scoreDisplay.textContent = score;
             levelDisplay.textContent = level;
         }
-        
-        // Mengacak ulang papan
+// Mengacak ulang papan
         function shuffleBoard() {
             if (isProcessing) return;
             
@@ -651,7 +745,7 @@
                             }
                         }
                     }
-                      // Periksa pertukaran ke bawah
+// Periksa pertukaran ke bawah
                     if (row < BOARD_SIZE - 1) {
                         // Simpan nilai asli
                         const temp = board[row][col];
