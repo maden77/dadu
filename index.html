@@ -6,7 +6,6 @@
     <title>Wajah Aneka - Game Candy Crush dengan Emoji</title>
     <meta name="description" content="Game match-3 dengan emoji wajah yang menyenangkan">
     <meta name="theme-color" content="#ff6b6b">
-    <link rel="manifest" href="manifest.json">
     <style>
         * {
             box-sizing: border-box;
@@ -14,6 +13,7 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -47,18 +47,25 @@
             width: 100%;
             max-width: 500px;
             margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .score-container, .level-container {
             text-align: center;
+            flex: 1;
+        }
+        
+        .score-label, .level-label {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 5px;
         }
         
         .score, .level {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: bold;
             color: #ff6b6b;
         }
@@ -66,57 +73,72 @@
         .game-board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
+            gap: 5px;
             width: 100%;
             max-width: 500px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            aspect-ratio: 1 / 1;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            touch-action: none;
         }
         
         .emoji {
-            font-size: 2rem;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.5);
-            transition: transform 0.2s, background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s ease;
             user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
         
         .emoji:hover {
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.05);
         }
         
         .emoji.selected {
             background-color: #ffd166;
             transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255, 209, 102, 0.7);
         }
         
         .emoji.matched {
-            animation: matched 0.5s ease-out;
+            animation: matched 0.5s ease-out forwards;
         }
         
         @keyframes matched {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(0); opacity: 0; }
+            0% { 
+                transform: scale(1); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: scale(1.2); 
+                opacity: 0.7; 
+            }
+            100% { 
+                transform: scale(0); 
+                opacity: 0; 
+            }
         }
         
         .controls {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
         }
         
         button {
-            padding: 12px 24px;
+            flex: 1;
+            padding: 15px 20px;
             border: none;
             border-radius: 50px;
             background: linear-gradient(to right, #ff6b6b, #ff9a9e);
@@ -125,7 +147,7 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s ease;
         }
         
         button:hover {
@@ -140,16 +162,17 @@
         
         .instructions {
             max-width: 500px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
         
         .instructions h2 {
             color: #ff6b6b;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: center;
         }
         
         .instructions p {
@@ -158,11 +181,12 @@
         }
         
         .swipe-info {
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px 20px;
-            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 12px 20px;
+            border-radius: 50px;
             margin-bottom: 15px;
             text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
             display: none;
         }
         
@@ -174,10 +198,85 @@
             font-size: 0.9rem;
         }
         
-        @media (max-width: 500px) {
+        /* Animasi untuk emoji baru */
+        @keyframes appear {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .emoji.new {
+            animation: appear 0.3s ease-out forwards;
+        }
+        
+        /* Efek untuk saat board sedang diproses */
+        .game-board.processing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        /* Modal untuk level up */
+        .level-up-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .level-up-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 80%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-content h2 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .modal-content p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        
+        .modal-emoji {
+            font-size: 3rem;
+            margin: 15px 0;
+        }
+        
+        /* Media queries untuk responsivitas */
+        @media (max-width: 520px) {
+            .game-board {
+                padding: 10px;
+                gap: 4px;
+            }
+            
             .emoji {
                 font-size: 1.5rem;
-                padding: 8px;
             }
             
             h1 {
@@ -185,27 +284,51 @@
             }
             
             .score, .level {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
             
             .swipe-info {
                 display: block;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
             }
         }
         
         @media (max-width: 400px) {
             .emoji {
                 font-size: 1.3rem;
-                padding: 6px;
             }
             
-            .controls {
-                flex-direction: column;
-                gap: 10px;
+            .game-info {
+                padding: 12px;
             }
             
-            button {
-                width: 100%;
+            .score, .level {
+                font-size: 1.6rem;
+            }
+            
+            .instructions {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            header {
+                margin-bottom: 15px;
+            }
+            
+            .game-info {
+                margin-bottom: 15px;
+            }
+            
+            .instructions {
+                display: none;
             }
         }
     </style>
@@ -218,11 +341,11 @@
     
     <div class="game-info">
         <div class="score-container">
-            <div>Poin</div>
+            <div class="score-label">Poin</div>
             <div class="score">0</div>
         </div>
         <div class="level-container">
-            <div>Level</div>
+            <div class="level-label">Level</div>
             <div class="level">1</div>
         </div>
     </div>
@@ -246,6 +369,15 @@
         <p>4. Semakin tinggi level, semakin sulit permainan</p>
     </div>
     
+    <div class="level-up-modal" id="levelUpModal">
+        <div class="modal-content">
+            <h2>Selamat!</h2>
+            <div class="modal-emoji">🎉</div>
+            <p>Anda mencapai level <span id="newLevel">1</span>!</p>
+            <button id="modalCloseBtn">Lanjutkan</button>
+        </div>
+    </div>
+    
     <footer>
         <p>Game Wajah Aneka &copy; 2023 - Mainkan dan bagikan!</p>
     </footer>
@@ -266,12 +398,10 @@
         // State game
         let score = 0;
         let level = 1;
-        let selectedEmoji = null;
         let board = [];
-        let isSwapping = false;
         let isProcessing = false;
+        let currentEmoji = null;
         let touchStartX, touchStartY;
-        let touchEndX, touchEndY;
         
         // Elemen DOM
         const gameBoard = document.getElementById('gameBoard');
@@ -279,6 +409,9 @@
         const levelDisplay = document.querySelector('.level');
         const hintBtn = document.getElementById('hintBtn');
         const shuffleBtn = document.getElementById('shuffleBtn');
+        const levelUpModal = document.getElementById('levelUpModal');
+        const newLevelDisplay = document.getElementById('newLevel');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
         
         // Inisialisasi game
         function initGame() {
@@ -288,10 +421,29 @@
             // Event listeners
             hintBtn.addEventListener('click', showHint);
             shuffleBtn.addEventListener('click', shuffleBoard);
+            modalCloseBtn.addEventListener('click', closeModal);
+            
+            // Event listener untuk mencegah refresh saat menggeser
+            document.addEventListener('touchmove', function(e) {
+                if (e.touches.length > 1) {
+                    return;
+                }
+                
+                const touch = e.touches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (element && (element.classList.contains('emoji') || element.closest('.game-board'))) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Event listener untuk mouse (desktop)
+            gameBoard.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mouseup', handleMouseUp);
             
             // Event listener untuk touch devices
-            gameBoard.addEventListener('touchstart', handleTouchStart, false);
-            gameBoard.addEventListener('touchend', handleTouchEnd, false);
+            gameBoard.addEventListener('touchstart', handleTouchStart, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
         }
         
         // Membuat papan game
@@ -305,14 +457,7 @@
                     const emoji = getRandomEmoji();
                     board[row][col] = emoji;
                     
-                    const emojiElement = document.createElement('div');
-                    emojiElement.className = 'emoji';
-                    emojiElement.textContent = emoji;
-                    emojiElement.dataset.row = row;
-                    emojiElement.dataset.col = col;
-                    
-                    emojiElement.addEventListener('click', handleEmojiClick);
-                    
+                    const emojiElement = createEmojiElement(emoji, row, col);
                     gameBoard.appendChild(emojiElement);
                 }
             }
@@ -323,6 +468,17 @@
             }, 300);
         }
         
+        // Membuat elemen emoji
+        function createEmojiElement(emoji, row, col) {
+            const emojiElement = document.createElement('div');
+            emojiElement.className = 'emoji';
+            emojiElement.textContent = emoji;
+            emojiElement.dataset.row = row;
+            emojiElement.dataset.col = col;
+            
+            return emojiElement;
+        }
+        
         // Mendapatkan emoji acak berdasarkan level
         function getRandomEmoji() {
             // Di level tinggi, tambahkan emoji khusus
@@ -330,33 +486,27 @@
             return emojiPool[Math.floor(Math.random() * emojiPool.length)];
         }
         
-        // Menangani klik emoji
-        function handleEmojiClick(event) {
+        // Menangani mouse down
+        function handleMouseDown(event) {
             if (isProcessing) return;
             
-            const row = parseInt(event.target.dataset.row);
-            const col = parseInt(event.target.dataset.col);
-            
-            if (!selectedEmoji) {
-                // Pilih emoji pertama
-                selectedEmoji = event.target;
-                selectedEmoji.classList.add('selected');
-            } else {
-                // Pilih emoji kedua
-                const firstRow = parseInt(selectedEmoji.dataset.row);
-                const firstCol = parseInt(selectedEmoji.dataset.col);
-                
-                // Periksa apakah emoji berdekatan
-                if ((Math.abs(firstRow - row) === 1 && firstCol === col) || 
-                    (Math.abs(firstCol - col) === 1 && firstRow === row)) {
-                    // Lakukan pertukaran
-                    swapEmojis(firstRow, firstCol, row, col);
-                }
-                
-                // Reset seleksi
-                selectedEmoji.classList.remove('selected');
-                selectedEmoji = null;
+            const element = event.target;
+            if (element.classList.contains('emoji')) {
+                currentEmoji = element;
+                touchStartX = event.clientX;
+                touchStartY = event.clientY;
             }
+        }
+        
+        // Menangani mouse up
+        function handleMouseUp(event) {
+            if (!currentEmoji || isProcessing) return;
+            
+            const touchEndX = event.clientX;
+            const touchEndY = event.clientY;
+            
+            handleSwipe(currentEmoji, touchStartX, touchStartY, touchEndX, touchEndY);
+            currentEmoji = null;
         }
         
         // Menangani touch start untuk swipe
@@ -370,29 +520,35 @@
             // Temukan elemen yang disentuh
             const element = document.elementFromPoint(touchStartX, touchStartY);
             if (element && element.classList.contains('emoji')) {
-                selectedEmoji = element;
-                selectedEmoji.classList.add('selected');
+                currentEmoji = element;
+                event.preventDefault();
             }
         }
         
         // Menangani touch end untuk swipe
         function handleTouchEnd(event) {
-            if (!selectedEmoji || isProcessing) return;
+            if (!currentEmoji || isProcessing) return;
             
             const touch = event.changedTouches[0];
-            touchEndX = touch.clientX;
-            touchEndY = touch.clientY;
+            const touchEndX = touch.clientX;
+            const touchEndY = touch.clientY;
             
-            const dx = touchEndX - touchStartX;
-            const dy = touchEndY - touchStartY;
-            const minSwipeDistance = 30; // Jarak minimum untuk dianggap sebagai swipe
+            handleSwipe(currentEmoji, touchStartX, touchStartY, touchEndX, touchEndY);
+            currentEmoji = null;
+        }
+        
+        // Menangani logika swipe
+        function handleSwipe(element, startX, startY, endX, endY) {
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const minSwipeDistance = 20;
             
             if (Math.abs(dx) > minSwipeDistance || Math.abs(dy) > minSwipeDistance) {
-                const firstRow = parseInt(selectedEmoji.dataset.row);
-                const firstCol = parseInt(selectedEmoji.dataset.col);
+                const row = parseInt(element.dataset.row);
+                const col = parseInt(element.dataset.col);
                 
-                let targetRow = firstRow;
-                let targetCol = firstCol;
+                let targetRow = row;
+                let targetCol = col;
                 
                 // Tentukan arah swipe
                 if (Math.abs(dx) > Math.abs(dy)) {
@@ -405,18 +561,15 @@
                 
                 // Pastikan target dalam batas papan
                 if (targetRow >= 0 && targetRow < BOARD_SIZE && targetCol >= 0 && targetCol < BOARD_SIZE) {
-                    swapEmojis(firstRow, firstCol, targetRow, targetCol);
+                    swapEmojis(row, col, targetRow, targetCol);
                 }
             }
-            
-            // Reset seleksi
-            selectedEmoji.classList.remove('selected');
-            selectedEmoji = null;
         }
         
         // Menukar dua emoji
         function swapEmojis(row1, col1, row2, col2) {
             isProcessing = true;
+            gameBoard.classList.add('processing');
             
             // Simpan nilai emoji
             const temp = board[row1][col1];
@@ -435,6 +588,7 @@
                     board[row2][col2] = temp;
                     updateBoardView();
                     isProcessing = false;
+                    gameBoard.classList.remove('processing');
                 } else {
                     // Jika ada match, proses match
                     processMatches();
@@ -454,15 +608,13 @@
         
         // Memeriksa apakah ada match di papan
         function checkMatches() {
-            let hasMatches = false;
-            
             // Periksa horizontal matches
             for (let row = 0; row < BOARD_SIZE; row++) {
                 for (let col = 0; col < BOARD_SIZE - 2; col++) {
                     if (board[row][col] && 
                         board[row][col] === board[row][col + 1] && 
                         board[row][col] === board[row][col + 2]) {
-                        hasMatches = true;
+                        return true;
                     }
                 }
             }
@@ -470,15 +622,15 @@
             // Periksa vertical matches
             for (let col = 0; col < BOARD_SIZE; col++) {
                 for (let row = 0; row < BOARD_SIZE - 2; row++) {
-                    if (board[row][col] && 
+           if (board[row][col] && 
                         board[row][col] === board[row + 1][col] && 
                         board[row][col] === board[row + 2][col]) {
-                        hasMatches = true;
+                        return true;
                     }
                 }
             }
             
-            return hasMatches;
+            return false;
         }
         
         // Memproses semua match di papan
@@ -487,11 +639,14 @@
             
             if (matches.length === 0) {
                 isProcessing = false;
+                gameBoard.classList.remove('processing');
                 
                 // Jika tidak ada moves yang valid, acak ulang
                 if (!hasValidMoves()) {
-                    alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');
-                    shuffleBoard();
+                    setTimeout(() => {
+                        alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');
+                        shuffleBoard();
+                    }, 300);
                 }
                 
                 return;
@@ -511,6 +666,8 @@
         // Mencari semua match di papan
         function findAllMatches() {
             const matches = [];
+            const horizontalMatches = new Set();
+            const verticalMatches = new Set();
             
             // Periksa horizontal matches
             for (let row = 0; row < BOARD_SIZE; row++) {
@@ -526,7 +683,7 @@
                         }
                         
                         for (let i = 0; i < matchLength; i++) {
-                            matches.push({row, col: col + i});
+                            horizontalMatches.add(`${row},${col + i}`);
                         }
                         
                         col += matchLength - 1;
@@ -548,7 +705,7 @@
                         }
                         
                         for (let i = 0; i < matchLength; i++) {
-                            matches.push({row: row + i, col});
+                            verticalMatches.add(`${row + i},${col}`);
                         }
                         
                         row += matchLength - 1;
@@ -556,38 +713,30 @@
                 }
             }
             
-            return matches;
+            // Gabungkan semua matches
+            return [...horizontalMatches, ...verticalMatches].map(coord => {
+                const [row, col] = coord.split(',').map(Number);
+                return { row, col };
+            });
         }
         
         // Menghapus match dari papan
         function removeMatches(matches) {
-            // Hilangkan duplikat (jika ada emoji yang termasuk dalam match horizontal dan vertikal)
-            const uniqueMatches = matches.filter((match, index, self) =>
-                index === self.findIndex(m => m.row === match.row && m.col === match.col)
-            );
-            
             // Tandai emoji yang matched untuk animasi
             const emojiElements = gameBoard.querySelectorAll('.emoji');
-            uniqueMatches.forEach(match => {
+            matches.forEach(match => {
                 const element = Array.from(emojiElements).find(el => 
                     parseInt(el.dataset.row) === match.row && 
                     parseInt(el.dataset.col) === match.col
                 );
-              if (element) {
+                
+                if (element) {
                     element.classList.add('matched');
                 }
                 
                 board[match.row][match.col] = null;
             });
-            
-            // Hapus kelas matched setelah animasi selesai
-            setTimeout(() => {
-                emojiElements.forEach(element => {
-                    element.classList.remove('matched');
-                });
-            }, 500);
         }
-        
         // Mengisi papan setelah match dihilangkan
         function fillBoard() {
             // Turunkan emoji dari atas
@@ -610,6 +759,15 @@
             }
             
             updateBoardView();
+            
+            // Tambahkan animasi untuk emoji baru
+            setTimeout(() => {
+                const emojiElements = gameBoard.querySelectorAll('.emoji');
+                emojiElements.forEach(element => {
+                    element.classList.add('new');
+                    setTimeout(() => element.classList.remove('new'), 300);
+                });
+            }, 50);
         }
         
         // Memeriksa apakah ada gerakan yang valid
@@ -664,7 +822,7 @@
             const newLevel = Math.floor(score / LEVEL_UP_SCORE) + 1;
             if (newLevel > level) {
                 level = newLevel;
-                alert(`Selamat! Anda mencapai level ${level}!`);
+                showLevelUpModal();
             }
             
             updateDisplay();
@@ -675,11 +833,24 @@
             scoreDisplay.textContent = score;
             levelDisplay.textContent = level;
         }
-// Mengacak ulang papan
+        
+        // Menampilkan modal level up
+        function showLevelUpModal() {
+            newLevelDisplay.textContent = level;
+            levelUpModal.classList.add('active');
+        }
+        
+        // Menutup modal level up
+        function closeModal() {
+            levelUpModal.classList.remove('active');
+        }
+        
+        // Mengacak ulang papan
         function shuffleBoard() {
             if (isProcessing) return;
             
             isProcessing = true;
+            gameBoard.classList.add('processing');
             
             // Buat papan baru
             for (let row = 0; row < BOARD_SIZE; row++) {
@@ -695,10 +866,10 @@
                 shuffleBoard(); // Acak ulang lagi jika tidak ada moves valid
             } else {
                 isProcessing = false;
+                gameBoard.classList.remove('processing');
             }
         }
-        
-        // Menunjukkan petunjuk (highlight move yang valid)
+// Menunjukkan petunjuk (highlight move yang valid)
         function showHint() {
             if (isProcessing) return;
             
@@ -745,7 +916,8 @@
                             }
                         }
                     }
-// Periksa pertukaran ke bawah
+                    
+                    // Periksa pertukaran ke bawah
                     if (row < BOARD_SIZE - 1) {
                         // Simpan nilai asli
                         const temp = board[row][col];
@@ -791,19 +963,6 @@
         
         // Inisialisasi game saat halaman dimuat
         window.addEventListener('load', initGame);
-        
-        // Service Worker untuk PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
