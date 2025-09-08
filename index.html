@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Wajah Aneka - Game Match-3 dengan Emoji</title>
 <meta name="description" content="Game match-3 dengan emoji wajah yang menyenangkan">
-<meta name="theme-color" content="#ff6b6b">
-  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff6b6b">  <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192x192.png" sizes="192x192">
   <link rel="icon" href="icon-512x512.png" sizes="512x512">
 <style>
@@ -51,11 +50,11 @@ footer{margin-top:auto;text-align:center;padding:20px;color:#666;font-size:0.9re
 </head>
 <body>
 <header><h1>Wajah Aneka</h1><p>Game match-3 dengan emoji wajah yang menyenangkan!</p></header>
-<div class="game-info"><div class="score-container"><div class="score-label">Poin</div><div class="score">0</div></div><div class="level-container"><div class="level-label">Level</div><div class="level">1</div></div></div>
-<div class="swipe-info">Geser (swipe) emoji untuk menukar posisi</div>
+<div class="game-info"><div class="score-container"><div class="score-label">Poin</div><div class="score">3240</div></div><div class="level-container"><div class="level-label">Level</div><div class="level">4</div></div></div>
+<div class="swipe-info">Klik emoji untuk memilih dan membuat garis match</div>
 <div class="game-board" id="gameBoard"></div>
 <div class="controls"><button id="hintBtn">Bantuan</button><button id="shuffleBtn">Acak Ulang</button></div>
-<div class="instructions"><h2>Cara Bermain</h2><p>1. Klik atau geser dua emoji yang berdekatan untuk menukar posisinya</p><p>2. Buat garis horizontal atau vertikal minimal 3 emoji yang sama untuk mencocokkannya</p><p>3. Dapatkan poin dan naik level setiap 1000 poin</p><p>4. Semakin tinggi level, semakin sulit permainan</p></div>
+<div class="instructions"><h2>Cara Bermain</h2><p>1. Klik emoji untuk memilihnya</p><p>2. Buat garis horizontal atau vertikal minimal 3 emoji yang sama</p><p>3. Emoji yang match akan hilang dan emoji di atasnya akan turun</p><p>4. Dapatkan poin dan naik level setiap 1000 poin</p></div>
 <div class="level-up-modal" id="levelUpModal"><div class="modal-content"><h2>Selamat!</h2><div class="modal-emoji">🎉</div><p>Anda mencapai level <span id="newLevel">1</span>!</p><button id="modalCloseBtn">Lanjutkan</button></div></div>
 <footer><p>Game Wajah Aneka &copy; 2023 - Mainkan dan bagikan!</p></footer>
 <script>
@@ -64,14 +63,11 @@ const BOARD_SIZE=8;
 const MIN_MATCH=3;
 const POINTS_PER_MATCH=100;
 const LEVEL_UP_SCORE=1000;
-const COMBO_MULTIPLIER=1.2;
-let score=0;
-let level=1;
+let score=3240;
+let level=4;
 let board=[];
 let isProcessing=false;
-let selectedEmoji=null;
-let comboCount=0;
-let comboMultiplier=1;
+let selectedEmojis=[];
 const gameBoard=document.getElementById('gameBoard');
 const scoreDisplay=document.querySelector('.score');
 const levelDisplay=document.querySelector('.level');
@@ -80,31 +76,27 @@ const shuffleBtn=document.getElementById('shuffleBtn');
 const levelUpModal=document.getElementById('levelUpModal');
 const newLevelDisplay=document.getElementById('newLevel');
 const modalCloseBtn=document.getElementById('modalCloseBtn');
-function initGame(){createBoard();updateDisplay();hintBtn.addEventListener('click',showHint);shuffleBtn.addEventListener('click',shuffleBoard);modalCloseBtn.addEventListener('click',closeModal);gameBoard.addEventListener('click',handleClick);gameBoard.addEventListener('touchstart',handleTouchStart,{passive:false});gameBoard.addEventListener('touchmove',handleTouchMove,{passive:false});gameBoard.addEventListener('touchend',handleTouchEnd);document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault()},{passive:false})}
-function createBoard(){gameBoard.innerHTML='';board=[];for(let row=0;row<BOARD_SIZE;row++){board[row]=[];for(let col=0;col<BOARD_SIZE;col++){const emoji=getRandomEmoji();board[row][col]=emoji;const emojiElement=createEmojiElement(emoji,row,col);gameBoard.appendChild(emojiElement)}}while(findAllMatches().length>0)shuffleBoard()}
+function initGame(){createBoard();updateDisplay();hintBtn.addEventListener('click',showHint);shuffleBtn.addEventListener('click',shuffleBoard);modalCloseBtn.addEventListener('click',closeModal);gameBoard.addEventListener('click',handleClick);}
+function createBoard(){gameBoard.innerHTML='';board=[];for(let row=0;row<BOARD_SIZE;row++){board[row]=[];for(let col=0;col<BOARD_SIZE;col++){const emoji=getRandomEmoji();board[row][col]=emoji;const emojiElement=createEmojiElement(emoji,row,col);gameBoard.appendChild(emojiElement)}}}
 function createEmojiElement(emoji,row,col){const emojiElement=document.createElement('div');emojiElement.className='emoji';emojiElement.textContent=emoji;emojiElement.dataset.row=row;emojiElement.dataset.col=col;return emojiElement}
 function getRandomEmoji(){const randomIndex=Math.floor(Math.random()*basicEmojis.length);return basicEmojis[randomIndex]}
-function handleClick(event){if(isProcessing)return;const element=event.target;if(!element.classList.contains('emoji'))return;if(!selectedEmoji){selectedEmoji=element;element.classList.add('selected')}else{const row1=parseInt(selectedEmoji.dataset.row);const col1=parseInt(selectedEmoji.dataset.col);const row2=parseInt(element.dataset.row);const col2=parseInt(element.dataset.col);selectedEmoji.classList.remove('selected');if((Math.abs(row1-row2)===1&&col1===col2)||(Math.abs(col1-col2)===1&&row1===row2))swapEmojis(row1,col1,row2,col2);selectedEmoji=null}}
-let touchStartX,touchStartY,touchElement;
-function handleTouchStart(event){if(isProcessing)return;const touch=event.touches[0];touchStartX=touch.clientX;touchStartY=touch.clientY;touchElement=document.elementFromPoint(touchStartX,touchStartY);if(touchElement&&touchElement.classList.contains('emoji'))event.preventDefault()}
-function handleTouchMove(event){if(!touchElement||isProcessing)return;event.preventDefault()}
-function handleTouchEnd(event){if(!touchElement||isProcessing)return;const touch=event.changedTouches[0];const touchEndX=touch.clientX;const touchEndY=touch.clientY;const dx=touchEndX-touchStartX;const dy=touchEndY-touchStartY;const minSwipeDistance=20;if(Math.abs(dx)>minSwipeDistance||Math.abs(dy)>minSwipeDistance){const row=parseInt(touchElement.dataset.row);const col=parseInt(touchElement.dataset.col);let targetRow=row;let targetCol=col;if(Math.abs(dx)>Math.abs(dy))targetCol+=dx>0?1:-1;else targetRow+=dy>0?1:-1;if(targetRow>=0&&targetRow<BOARD_SIZE&&targetCol>=0&&targetCol<BOARD_SIZE)swapEmojis(row,col,targetRow,targetCol)}touchElement=null}
-function swapEmojis(row1,col1,row2,col2){isProcessing=true;gameBoard.classList.add('processing');const temp=board[row1][col1];board[row1][col1]=board[row2][col2];board[row2][col2]=temp;updateBoardView();setTimeout(()=>{const matches=findAllMatches();if(matches.length===0){board[row2][col2]=board[row1][col1];board[row1][col1]=temp;updateBoardView();isProcessing=false;gameBoard.classList.remove('processing');checkAndShuffleIfNoMoves()}else{comboCount++;comboMultiplier=1+(comboCount*0.2);processMatches()}},300)}
-function updateBoardView(){const emojiElements=gameBoard.querySelectorAll('.emoji');emojiElements.forEach(element=>{const row=parseInt(element.dataset.row);const col=parseInt(element.dataset.col);element.textContent=board[row][col]})}
-function processMatches(){const matches=findAllMatches();if(matches.length===0){isProcessing=false;gameBoard.classList.remove('processing');comboCount=0;comboMultiplier=1;checkAndShuffleIfNoMoves();return}
-removeMatches(matches);addScore(Math.floor(matches.length*POINTS_PER_MATCH*comboMultiplier));if(comboCount>1)showComboNotification(comboCount);setTimeout(()=>{fillBoard()},500)}
-function findAllMatches(){const matches=new Set();for(let row=0;row<BOARD_SIZE;row++){for(let col=0;col<BOARD_SIZE-2;col++){if(board[row][col]&&board[row][col]===board[row][col+1]&&board[row][col]===board[row][col+2]){let matchLength=3;while(col+matchLength<BOARD_SIZE&&board[row][col]===board[row][col+matchLength])matchLength++;for(let i=0;i<matchLength;i++)matches.add(`${row},${col+i}`);col+=matchLength-1}}}for(let col=0;col<BOARD_SIZE;col++){for(let row=0;row<BOARD_SIZE-2;row++){if(board[row][col]&&board[row][col]===board[row+1][col]&&board[row][col]===board[row+2][col]){let matchLength=3;while(row+matchLength<BOARD_SIZE&&board[row][col]===board[row+matchLength][col])matchLength++;for(let i=0;i<matchLength;i++)matches.add(`${row+i},${col}`);row+=matchLength-1}}}return Array.from(matches).map(coord=>{const[row,col]=coord.split(',').map(Number);return{row,col}})}
-function removeMatches(matches){const emojiElements=gameBoard.querySelectorAll('.emoji');matches.forEach(match=>{const element=Array.from(emojiElements).find(el=>parseInt(el.dataset.row)===match.row&&parseInt(el.dataset.col)===match.col);if(element)element.classList.add('matched');board[match.row][match.col]=null})}
-function fillBoard(){for(let col=0;col<BOARD_SIZE;col++){let emptySpaces=0;for(let row=BOARD_SIZE-1;row>=0;row--){if(board[row][col]===null)emptySpaces++;else if(emptySpaces>0){board[row+emptySpaces][col]=board[row][col];board[row][col]=null}}for(let row=0;row<emptySpaces;row++)board[row][col]=getRandomEmoji()}updateBoardView();setTimeout(()=>{const emojiElements=gameBoard.querySelectorAll('.emoji');emojiElements.forEach(element=>{element.classList.add('new');setTimeout(()=>element.classList.remove('new'),300)});setTimeout(()=>{const newMatches=findAllMatches();if(newMatches.length>0)processMatches();else{isProcessing=false;gameBoard.classList.remove('processing');comboCount=0;comboMultiplier=1;checkAndShuffleIfNoMoves()}},400)},50)}
-function hasValidMoves(){for(let row=0;row<BOARD_SIZE;row++){for(let col=0;col<BOARD_SIZE;col++){if(col<BOARD_SIZE-1){const temp=board[row][col];board[row][col]=board[row][col+1];board[row][col+1]=temp;const hasMatch=findAllMatches().length>0;board[row][col+1]=board[row][col];board[row][col]=temp;if(hasMatch)return true}if(row<BOARD_SIZE-1){const temp=board[row][col];board[row][col]=board[row+1][col];board[row+1][col]=temp;const hasMatch=findAllMatches().length>0;board[row+1][col]=board[row][col];board[row][col]=temp;if(hasMatch)return true}}}return false}
-function checkAndShuffleIfNoMoves(){if(!hasValidMoves())setTimeout(()=>{alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');shuffleBoard()},300)}
-function addScore(points){score+=points;const newLevel=Math.floor(score/LEVEL_UP_SCORE)+1;if(newLevel>level){level=newLevel;showLevelUpModal()}updateDisplay()}
-function updateDisplay(){scoreDisplay.textContent=score;levelDisplay.textContent=level}
-function showLevelUpModal(){newLevelDisplay.textContent=level;levelUpModal.classList.add('active')}
-function closeModal(){levelUpModal.classList.remove('active')}
-function shuffleBoard(){if(isProcessing)return;isProcessing=true;gameBoard.classList.add('processing');for(let row=0;row<BOARD_SIZE;row++)for(let col=0;col<BOARD_SIZE;col++)board[row][col]=getRandomEmoji();updateBoardView();if(!hasValidMoves())shuffleBoard();else{isProcessing=false;gameBoard.classList.remove('processing')}}
-function showHint(){if(isProcessing)return;for(let row=0;row<BOARD_SIZE;row++){for(let col=0;col<BOARD_SIZE;col++){if(col<BOARD_SIZE-1){const temp=board[row][col];board[row][col]=board[row][col+1];board[row][col+1]=temp;const hasMatch=findAllMatches().length>0;board[row][col+1]=board[row][col];board[row][col]=temp;if(hasMatch){const emojiElements=gameBoard.querySelectorAll('.emoji');const firstElement=Array.from(emojiElements).find(el=>parseInt(el.dataset.row)===row&&parseInt(el.dataset.col)===col);const secondElement=Array.from(emojiElements).find(el=>parseInt(el.dataset.row)===row&&parseInt(el.dataset.col)===col+1);if(firstElement&&secondElement){firstElement.classList.add('selected');secondElement.classList.add('selected');setTimeout(()=>{firstElement.classList.remove('selected');secondElement.classList.remove('selected')},1000);return}}}if(row<BOARD_SIZE-1){const temp=board[row][col];board[row][col]=board[row+1][col];board[row+1][col]=temp;const hasMatch=findAllMatches().length>0;board[row+1][col]=board[row][col];board[row][col]=temp;if(hasMatch){const emojiElements=gameBoard.querySelectorAll('.emoji');const firstElement=Array.from(emojiElements).find(el=>parseInt(el.dataset.row)===row&&parseInt(el.dataset.col)===col);const secondElement=Array.from(emojiElements).find(el=>parseInt(el.dataset.row)===row+1&&parseInt(el.dataset.col)===col);if(firstElement&&secondElement){firstElement.classList.add('selected');secondElement.classList.add('selected');setTimeout(()=>{firstElement.classList.remove('selected');secondElement.classList.remove('selected')},1000);return}}}}}}
-function showComboNotification(combo){const notification=document.createElement('div');notification.className='combo-notification';notification.textContent=`Combo x${combo}!`;notification.style.left=`${gameBoard.offsetLeft+gameBoard.offsetWidth/2-50}px`;notification.style.top=`${gameBoard.offsetTop+gameBoard.offsetHeight/2}px`;document.body.appendChild(notification);setTimeout(()=>{document.body.removeChild(notification)},1000)}
+function handleClick(event){if(isProcessing)return;const element=event.target;if(!element.classList.contains('emoji'))return;const row=parseInt(element.dataset.row);const col=parseInt(element.dataset.col);if(selectedEmojis.some(e=>e.row===row&&e.col===col)){element.classList.remove('selected');selectedEmojis=selectedEmojis.filter(e=>!(e.row===row&&e.col===col));return}
+element.classList.add('selected');selectedEmojis.push({row,col,emoji:board[row][col]});if(selectedEmojis.length>=MIN_MATCH){checkSelectedMatches();}}
+function checkSelectedMatches(){const firstEmoji=selectedEmojis[0].emoji;const allSame=selectedEmojis.every(e=>e.emoji===firstEmoji);if(!allSame){clearSelection();return}
+const rows=selectedEmojis.map(e=>e.row);const cols=selectedEmojis.map(e=>e.col);const minRow=Math.min(...rows);const maxRow=Math.max(...rows);const minCol=Math.min(...cols);const maxCol=Math.max(...cols);const isHorizontal=(maxRow-minRow===0)&&(maxCol-minCol>=MIN_MATCH-1);const isVertical=(maxCol-minCol===0)&&(maxRow-minRow>=MIN_MATCH-1);if(isHorizontal||isVertical){processMatches(selectedEmojis);}else{clearSelection();}}
+function clearSelection(){selectedEmojis.forEach(({row,col})=>{const element=document.querySelector(`.emoji[data-row="${row}"][data-col="${col}"]`);if(element)element.classList.remove('selected');});selectedEmojis=[];}
+function processMatches(matches){isProcessing=true;gameBoard.classList.add('processing');matches.forEach(({row,col})=>{board[row][col]=null;const element=document.querySelector(`.emoji[data-row="${row}"][data-col="${col}"]`);if(element)element.classList.add('matched');});addScore(matches.length*POINTS_PER_MATCH);setTimeout(()=>{fillBoard();clearSelection();},500);}
+function fillBoard(){for(let col=0;col<BOARD_SIZE;col++){let emptySpaces=0;for(let row=BOARD_SIZE-1;row>=0;row--){if(board[row][col]===null){emptySpaces++;}else if(emptySpaces>0){board[row+emptySpaces][col]=board[row][col];board[row][col]=null;}}for(let row=0;row<emptySpaces;row++){board[row][col]=getRandomEmoji();}}updateBoardView();setTimeout(()=>{const emojiElements=gameBoard.querySelectorAll('.emoji');emojiElements.forEach(element=>{element.classList.add('new');setTimeout(()=>element.classList.remove('new'),300);});setTimeout(()=>{isProcessing=false;gameBoard.classList.remove('processing');checkAndShuffleIfNoMoves();},400);},50);}
+function updateBoardView(){const emojiElements=gameBoard.querySelectorAll('.emoji');emojiElements.forEach(element=>{const row=parseInt(element.dataset.row);const col=parseInt(element.dataset.col);element.textContent=board[row][col];element.classList.remove('selected','matched');});}
+function checkAndShuffleIfNoMoves(){if(!hasValidMoves()){setTimeout(()=>{alert('Tidak ada gerakan yang valid! Mengacak ulang papan...');shuffleBoard();},300);}}
+function hasValidMoves(){for(let row=0;row<BOARD_SIZE;row++){for(let col=0;col<BOARD_SIZE;col++){if(col<BOARD_SIZE-1){if(board[row][col]===board[row][col+1])return true;}if(row<BOARD_SIZE-1){if(board[row][col]===board[row+1][col])return true;}}}return false;}
+function addScore(points){score+=points;const newLevel=Math.floor(score/LEVEL_UP_SCORE)+1;if(newLevel>level){level=newLevel;showLevelUpModal();}updateDisplay();}
+function updateDisplay(){scoreDisplay.textContent=score;levelDisplay.textContent=level;}
+function showLevelUpModal(){newLevelDisplay.textContent=level;levelUpModal.classList.add('active');}
+function closeModal(){levelUpModal.classList.remove('active');}
+function shuffleBoard(){if(isProcessing)return;isProcessing=true;gameBoard.classList.add('processing');for(let row=0;row<BOARD_SIZE;row++){for(let col=0;col<BOARD_SIZE;col++){board[row][col]=getRandomEmoji();}}updateBoardView();setTimeout(()=>{isProcessing=false;gameBoard.classList.remove('processing');},300);}
+function showHint(){if(isProcessing)return;for(let row=0;row<BOARD_SIZE;row++){for(let col=0;col<BOARD_SIZE;col++){if(col<BOARD_SIZE-2&&board[row][col]===board[row][col+1]&&board[row][col]===board[row][col+2]){highlightHint(row,col,row,col+1,row,col+2);return;}if(row<BOARD_SIZE-2&&board[row][col]===board[row+1][col]&&board[row][col]===board[row+2][col]){highlightHint(row,col,row+1,col,row+2,col);return;}}}}}
+function highlightHint(r1,c1,r2,c2,r3,c3){const elements=[document.querySelector(`.emoji[data-row="${r1}"][data-col="${c1}"]`),document.querySelector(`.emoji[data-row="${r2}"][data-col="${c2}"]`),document.querySelector(`.emoji[data-row="${r3}"][data-col="${c3}"]`)];elements.forEach(el=>{if(el)el.classList.add('selected');});setTimeout(()=>{elements.forEach(el=>{if(el)el.classList.remove('selected');});},1000);}
 window.addEventListener('load',initGame);
 </script>
 </body>
