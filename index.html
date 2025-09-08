@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Wajah Aneka - Game Match-3 dengan Emoji</title>
 <meta name="description" content="Game match-3 dengan emoji wajah yang menyenangkan">
-<meta name="theme-color" content="#ff6b6b">  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff6b6b">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192x192.png" sizes="192x192">
   <link rel="icon" href="icon-512x512.png" sizes="512x512">
 <style>
@@ -58,7 +59,7 @@ footer{margin-top:auto;text-align:center;padding:20px;color:#666;font-size:0.9re
 <div class="level-up-modal" id="levelUpModal"><div class="modal-content"><h2>Selamat!</h2><div class="modal-emoji">🎉</div><p>Anda mencapai level <span id="newLevel">1</span>!</p><button id="modalCloseBtn">Lanjutkan</button></div></div>
 <footer><p>Game Wajah Aneka &copy; 2023 - Mainkan dan bagikan!</p></footer>
 <script>
-const basicEmojis=['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🫣','🤗','🫡','🤔','🫢','🤭','🤫','🤥','😶','🫠','😐','🫤','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🫥','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'];
+const basicEmojis=['😁','😩','😝','😳','😢'];
 const BOARD_SIZE=8;
 const MIN_MATCH=3;
 const POINTS_PER_MATCH=100;
@@ -82,7 +83,7 @@ const modalCloseBtn=document.getElementById('modalCloseBtn');
 function initGame(){createBoard();updateDisplay();hintBtn.addEventListener('click',showHint);shuffleBtn.addEventListener('click',shuffleBoard);modalCloseBtn.addEventListener('click',closeModal);gameBoard.addEventListener('click',handleClick);gameBoard.addEventListener('touchstart',handleTouchStart,{passive:false});gameBoard.addEventListener('touchmove',handleTouchMove,{passive:false});gameBoard.addEventListener('touchend',handleTouchEnd);document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault()},{passive:false})}
 function createBoard(){gameBoard.innerHTML='';board=[];for(let row=0;row<BOARD_SIZE;row++){board[row]=[];for(let col=0;col<BOARD_SIZE;col++){const emoji=getRandomEmoji();board[row][col]=emoji;const emojiElement=createEmojiElement(emoji,row,col);gameBoard.appendChild(emojiElement)}}while(findAllMatches().length>0)shuffleBoard()}
 function createEmojiElement(emoji,row,col){const emojiElement=document.createElement('div');emojiElement.className='emoji';emojiElement.textContent=emoji;emojiElement.dataset.row=row;emojiElement.dataset.col=col;return emojiElement}
-function getRandomEmoji(){const emojiCount=Math.min(10+level*2,basicEmojis.length);const randomIndex=Math.floor(Math.random()*emojiCount);return basicEmojis[randomIndex]}
+function getRandomEmoji(){const randomIndex=Math.floor(Math.random()*basicEmojis.length);return basicEmojis[randomIndex]}
 function handleClick(event){if(isProcessing)return;const element=event.target;if(!element.classList.contains('emoji'))return;if(!selectedEmoji){selectedEmoji=element;element.classList.add('selected')}else{const row1=parseInt(selectedEmoji.dataset.row);const col1=parseInt(selectedEmoji.dataset.col);const row2=parseInt(element.dataset.row);const col2=parseInt(element.dataset.col);selectedEmoji.classList.remove('selected');if((Math.abs(row1-row2)===1&&col1===col2)||(Math.abs(col1-col2)===1&&row1===row2))swapEmojis(row1,col1,row2,col2);selectedEmoji=null}}
 let touchStartX,touchStartY,touchElement;
 function handleTouchStart(event){if(isProcessing)return;const touch=event.touches[0];touchStartX=touch.clientX;touchStartY=touch.clientY;touchElement=document.elementFromPoint(touchStartX,touchStartY);if(touchElement&&touchElement.classList.contains('emoji'))event.preventDefault()}
